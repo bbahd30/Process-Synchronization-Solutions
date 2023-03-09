@@ -124,10 +124,10 @@ int main()
     cout << "Enter the number of cars: ";
     cin >> numCars;
     int rightCars, leftCars;
-    cout << "Enter the number of cars heading towards right: ";
-    cin >> rightCars;
     cout << "Enter the number of cars heading towards left: ";
     cin >> leftCars;
+    
+    rightCars = numCars - leftCars;
 
     currentDirection = 0;
     carsOnBridge = 0;
