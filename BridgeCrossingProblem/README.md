@@ -107,7 +107,7 @@ We need a solution that can synchronize the process of the crossing of the given
     - The `while` loop runs till the threads find the condition of entering the bridge satisfied.
         - Here condition states that if the current direction is not set or is the same as of the car and the current number of cars is less than the maximum capacity, then the current car is allowed to enter the bridge.
             - After which it sets `currentDirection` and increments `carsOnBridge`.
-            - Decrements the 'carsToCross[1]'.
+            - Decrements the first element of 'carsToCross'.
             - And unlocking the `mutex`.
             - And then enters the critical section `bridge`.
         - After the car crosses the bridge, other side of the bridge is checked to check if it was the last one on the bridge to prevent 'Starvation' 
@@ -117,7 +117,7 @@ We need a solution that can synchronize the process of the crossing of the given
     
     ```cpp
     void *rightCar(void *arg)
-{
+   {
     int carId = *(int *)arg;
 
     pthread_mutex_lock(&mutex);
@@ -154,7 +154,7 @@ We need a solution that can synchronize the process of the crossing of the given
         }
     }
     pthread_exit(NULL);
-}
+   }
     ```
     
     Similar for the `leftCar`.
