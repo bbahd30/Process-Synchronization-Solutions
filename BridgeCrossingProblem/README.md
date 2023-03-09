@@ -111,8 +111,8 @@ We need a solution that can synchronize the process of the crossing of the given
             - And unlocking the `mutex`.
             - And then enters the critical section `bridge`.
         - After the car crosses the bridge, other side of the bridge is checked to check if it was the last one on the bridge to prevent 'Starvation' 
+        - It is checked if it was the last one on bridge, then if it was last we need to check both the sides and look the number of cars on the other side waiting, if there is no car on left, then right-moving cars move.
         - If not, then the car waits and releases the `mutex`.
-        - After crossing, it needs to be checked if it was the last one on bridge, then if it was last we need to check both the sides and look the number of cars on the other side waiting, if there is no car on left, then right-moving cars move.
 - The function to execute for the right-moving cars is as follows:
     
     ```cpp
