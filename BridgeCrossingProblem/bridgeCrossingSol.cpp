@@ -19,7 +19,7 @@ void crossingBridge(int carId, int direction)
     else
         cout << "Car " << carId << " is heading towards left\n";
 
-    sleep(10);
+    sleep(2);
     // so that the other cars can also check for crossing
 }
 
@@ -30,7 +30,7 @@ void waitingCar(int carId, int direction)
     else
         cout << "Car " << carId << " heading towards left, couldn't cross bridge and waiting.\n";
 
-    sleep(10);
+    sleep(2);
 }
 
 void bridgeArrived(int carId, int direction)
@@ -56,7 +56,6 @@ void *rightCar(void *arg)
     bridgeArrived(carId, 1);
     while (true)
     {
-        cout << "**************\nnumber of cars on bridge now: " << carsOnBridge << " and direction is " << currentDirection << "\n";
         if (((currentDirection == 1 || currentDirection == 0) && carsOnBridge < 3) || ((currentDirection == -1) && carsOnBridge == 0))
         {
             currentDirection = 1;
@@ -94,7 +93,7 @@ void *leftCar(void *arg)
         pthread_mutex_lock(&mutex);
         if (((currentDirection == -1 || currentDirection == 0) && carsOnBridge < 3) || ((currentDirection == 1) && carsOnBridge == 0))
         {
-            cout << "**************\nnumber of cars on bridge now: " << carsOnBridge << " and direction is " << currentDirection << "\n";
+        
             currentDirection = -1;
             carsOnBridge++;
             crossingBridge(carId, -1); // to make the print statement atomic as will cross the bridge, satisfied
