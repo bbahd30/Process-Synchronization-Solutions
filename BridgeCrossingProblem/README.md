@@ -112,7 +112,7 @@ We need a solution that can synchronize the process of the crossing of the given
             - And then enters the critical section `bridge`.
         - After the car crosses the bridge, other side of the bridge is checked to check if it was the last one on the bridge to prevent 'Starvation' 
         - If not, then the car waits and releases the `mutex`.
-        -
+        - After crossing, it needs to be checked if it was the last one on bridge, then if it was last we need to check both the sides and look the number of cars on the other side waiting, if there is no car on left, then right-moving cars move.
 - The function to execute for the right-moving cars is as follows:
     
     ```cpp
@@ -159,19 +159,3 @@ We need a solution that can synchronize the process of the crossing of the given
     
     Similar for the `leftCar`.
     
-
-## Analysis
-
-- The above-stated solution satisfies the 3 parameters stated at the beginning to the following extent:
-    - Mutual Exclusion
-        - `mutex` lock allows the single thread exclusion.
-        - `bridgeSem` semaphore allows a maximum of 3 threads to share the bridge as needed.
-    - Progress
-        - Any car that arrives gets a chance to cross the bridge, hence providing progress.
-        - `currentDirection` and semaphores ensure that there is no deadlock.
-    - Bounded Waiting
-        - Any car that reaches when the `currentDirection` is the same as its direction then the car is allowed to go when the `bridgeSem` is released.
-        - However, the arrived car which has the opposite direction has to wait until the direction changes, i.e., till `carsOnBridge` turns 0.
-            - Though this ensures that the cars on either side have bounded waiting and aren’t waiting indefinitely to cross the bridge.
-            - The arrival of the cars moving in the same direction, one after the other, may lead to starvation of the car to move in the opposite direction.
-- Moreover, `while` loop we are using also makes the program inefficient.
