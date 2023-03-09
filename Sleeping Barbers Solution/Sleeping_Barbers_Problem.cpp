@@ -90,7 +90,7 @@ This can be easily solved without having to use any additional semaphores by usi
 A thread which executes Barber() has to be initialised for each barber in the shop.
 
 
-The problem for the above situation can be solved using the following psuedocode:
+The problem for the above situation can be solved using the following code:
 
 
 
