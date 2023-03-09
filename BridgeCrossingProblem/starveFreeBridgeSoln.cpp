@@ -61,7 +61,7 @@ void *rightCar(void *arg)
             pthread_mutex_lock(&mutex);
             carsOnBridge--;
             leavingBridge(carId, 1);
-            // after crossing the bridge need to take care if the last one on bridge, then have to check check both the sides
+            // after crossing the bridge need to take care if the last one on bridge, then have to check both the sides
             // to prevent starvation, should look the number of cars on the other side waiting, if no one of left, then right-moving cars move
             if (carsOnBridge == 0 && carsToCross[0] > 0)
                 currentDirection = -1;
