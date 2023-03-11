@@ -6,13 +6,12 @@ using namespace std;
 
 sem_t bridgeSem;
 pthread_mutex_t mutex;
+pthread_mutex_t emutex;
 
 int numCars;
 int rightCars, leftCars;
 int carsOnBridge;
 int currentDirection;
-//
-int carsToCross[2];
 
 void crossingBridge(int carId, int direction)
 {
@@ -41,18 +40,19 @@ void leavingBridge(int carId, int direction)
 void *rightCar(void *arg)
 {
     int carId = *(int *)arg;
-
-    pthread_mutex_lock(&mutex);
     bridgeArrived(carId, 1);
+    pthread_mutex_lock(&emutex);
     while (true)
     {
-        if (((currentDirection == 1 || currentDirection == 0) && carsOnBridge < 3))
+
+        if (carsOnBridge < 3 && (currentDirection == 1 || currentDirection == 0))
         {
-            currentDirection = 1;
+            pthread_mutex_lock(&mutex);
             carsOnBridge++;
-            carsToCross[1]--;
+            currentDirection = 1;
             crossingBridge(carId, 1);
             pthread_mutex_unlock(&mutex);
+            pthread_mutex_unlock(&emutex);
 
             sem_wait(&bridgeSem);
             sleep(2);
@@ -63,15 +63,16 @@ void *rightCar(void *arg)
             leavingBridge(carId, 1);
             // after crossing the bridge need to take care if the last one on bridge, then have to check both the sides
             // to prevent starvation, should look the number of cars on the other side waiting, if no one of left, then right-moving cars move
-            if (carsOnBridge == 0 && carsToCross[0] > 0)
-                currentDirection = -1;
+            if (carsOnBridge == 0)
+            {
+                currentDirection = 0;
+            }
             pthread_mutex_unlock(&mutex);
             break;
         }
         else
         {
             waitingCar(carId, 1);
-            pthread_mutex_unlock(&mutex);
             sleep(1);
         }
     }
@@ -82,33 +83,36 @@ void *leftCar(void *arg)
 {
     int carId = *(int *)arg;
     bridgeArrived(carId, -1);
+    pthread_mutex_lock(&emutex);
 
     while (true)
     {
-        pthread_mutex_lock(&mutex);
-        if (((currentDirection == -1 || currentDirection == 0) && carsOnBridge < 3))
+        if (carsOnBridge < 3 && (currentDirection == -1 || currentDirection == 0))
         {
-            currentDirection = -1;
+            pthread_mutex_lock(&mutex);
             carsOnBridge++;
-            crossingBridge(carId, -1); // to make the print statement atomic as will cross the bridge, satisfied
+            currentDirection = -1;
+            crossingBridge(carId, -1);
             pthread_mutex_unlock(&mutex);
+            pthread_mutex_unlock(&emutex);
 
             sem_wait(&bridgeSem);
-            sleep(1);
+            sleep(2);
             sem_post(&bridgeSem);
 
             pthread_mutex_lock(&mutex);
             carsOnBridge--;
             leavingBridge(carId, -1);
-            if (carsOnBridge == 0 && carsToCross[1] > 0)
-                currentDirection = 1;
+            // after crossing the bridge need to take care if the last one on bridge, then have to check both the sides
+            // to prevent starvation, should look the number of cars on the other side waiting, if no one of left, then right-moving cars move
+            if (carsOnBridge == 0)
+                currentDirection = 0;
             pthread_mutex_unlock(&mutex);
             break;
         }
         else
         {
             waitingCar(carId, -1);
-            pthread_mutex_unlock(&mutex);
             sleep(1);
         }
     }
@@ -123,14 +127,12 @@ int main()
     cin >> leftCars;
     rightCars = numCars - leftCars;
 
-    carsToCross[0] = leftCars;
-    carsToCross[1] = rightCars;
-
     currentDirection = 0;
     carsOnBridge = 0;
 
     sem_init(&bridgeSem, 0, 3);
     pthread_mutex_init(&mutex, NULL);
+    pthread_mutex_init(&emutex, NULL);
 
     pthread_t cars[numCars];
     int threadArgs[numCars];
