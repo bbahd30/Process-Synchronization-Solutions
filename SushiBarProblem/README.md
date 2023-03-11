@@ -24,6 +24,7 @@ It is initialised to 0.
 
 The pseudocode for the solution is as follows:
 
+```
 // Values initialised to
 // mutex = 1
 // lock = 1
@@ -73,5 +74,6 @@ visit_sushibar()
     signal(seats);
 
 }
+```
 
 
