@@ -97,3 +97,166 @@ The problem for the above situation can be solved using the following code:
 
 
 */
+
+
+
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <semaphore.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/time.h>
+
+void *barber(void *idp)
+{
+    int counter = 0;
+
+    while (1)
+    {
+        sem_wait(&waiting_cust);
+
+        sem_wait(&access_wait_chairs);
+
+        available_seats++;
+
+        sem_post(&access_wait_chairs);
+
+        sem_post(&barber_sleep);
+
+        pthread_mutex_lock(&srvCust);
+
+        get_haircut();
+
+        pthread_mutex_unlock(&srvCust);
+
+        printf("Customer was served.\n");
+
+        counter++;
+        if (counter == (total_custs - not_served))
+            break;
+    }
+    pthread_exit(NULL);
+}
+
+void *customer(void *idp)
+{
+    struct timeval start, stop;
+
+    sem_wait(&access_wait_chairs);
+
+    if (available_seats >= 1)
+    {
+        available_seats--;
+
+        printf("Customer[pid = %lu] is waiting.\n", pthread_self());
+        printf("Available seats: %d\n", available_seats);
+
+        gettimeofday(&start, NULL);
+
+        sem_post(&waiting_cust);
+
+        sem_post(&access_wait_chairs);
+
+        sem_wait(&barber_sleep);
+
+        gettimeofday(&stop, NULL);
+
+        double sec = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
+
+        waiting_time_sum += 1000 * sec;
+        printf("Customer[pid = %lu] is being served. \n", pthread_self());
+    }
+    else
+    {
+        sem_post(&access_wait_chairs);
+        not_served++;
+        printf("A Customer left.\n");
+    }
+
+    pthread_exit(NULL);
+}
+
+void get_haircut()
+{
+    int s = rand() % 401;
+
+    s = s * 1000;
+    usleep(s);
+}
+
+void *make_cust()
+{
+    int tmp;
+    int counter = 0;
+
+    while (counter < total_custs)
+    {
+        pthread_t customer_thread;
+
+        tmp = pthread_create(&customer_thread, NULL, (void *)customer, NULL);
+
+        if (tmp)
+            printf("Failed to create thread.");
+
+        counter++;
+
+        usleep(100000);
+    }
+}
+
+pthread_mutex_t srvCust;
+
+sem_t barber_sleep;
+sem_t waiting_cust;
+sem_t access_wait_chairs;
+
+int chair_cnt;
+int total_custs;
+
+int available_seats;
+int not_served = 0;
+time_t waiting_time_sum;
+
+int main()
+{
+    srand(time(NULL));
+
+    pthread_t barber_1;
+
+    pthread_t customer_maker;
+
+    int tmp;
+
+    pthread_mutex_init(&srvCust, NULL);
+
+    sem_init(&waiting_cust, 0, 0);
+    sem_init(&barber_sleep, 0, 0);
+    sem_init(&access_wait_chairs, 0, 1);
+
+    printf("Please enter the number of seats: \n");
+    scanf("%d", &chair_cnt);
+
+    printf("Please enter the total customers: \n");
+    scanf("%d", &total_custs);
+
+    available_seats = chair_cnt;
+
+    tmp = pthread_create(&barber_1, NULL, (void *)barber, NULL);
+
+    if (tmp)
+        printf("Failed to create thread.");
+
+    tmp = pthread_create(&customer_maker, NULL, (void *)make_cust, NULL);
+
+    if (tmp)
+        printf("Failed to create thread.");
+
+    pthread_join(barber_1, NULL);
+    pthread_join(customer_maker, NULL);
+
+    printf("\n------------------------------------------------\n");
+    printf("Average customers' waiting time: %f ms.\n", (waiting_time_sum / (double)(total_custs - not_served)));
+    printf("Number of customers that were forced to leave: %d\n", not_served);
+}
