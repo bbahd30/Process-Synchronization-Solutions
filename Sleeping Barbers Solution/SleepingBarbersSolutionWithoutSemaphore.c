@@ -41,17 +41,27 @@ void sem_destroy(struct MeraSemaphore *s){
     return;
 }
 
-#define NUM_OF_CHAIRS 7
-#define HAIRCUT_TIME 2
-#define NUM_OF_BARBERS 3
+#define NUM_OF_CHAIRS 8
+#define HAIRCUT_TIME 1
+#define NUM_OF_BARBERS 4
 #define NUM_OF_CUSTOMERS 20
-#define MOD 2000
+#define MOD 40000
 
 int NumberOfFreeSeats=NUM_OF_CHAIRS;
 int Seat_To_Customer_Map[NUM_OF_CHAIRS];
 int Next_Seat_To_Be_Occupied=0;
 int Chair_Index=0;
 int Customer_Number=0;
+
+int RandomNumberGenerator(){
+    int x=rand()%MOD+100;
+    srand(time(NULL));
+    return x;
+}
+
+void Wait_Before_Next_Customer_Arrives(){
+    usleep(RandomNumberGenerator());
+}
 
 void Barber_Thread(void *ptr){
 
@@ -68,11 +78,11 @@ void Barber_Thread(void *ptr){
         sem_post(&Mutex_Semaphore);
         sem_post(&Customer_Semaphore);
 
-        printf("Barber %d is cutting the hair of customer %d\n",index,Customer_ID);
+        printf("Barber %d is cutting the hair of customer %d\n",index+1,Customer_ID);
 
         sleep(HAIRCUT_TIME);
 
-        printf("Done with the haircut\n");
+        printf("Barber %d is done with the haircut of the customer %d\n",index+1,Customer_ID);
     }
     return;
 }
@@ -132,6 +142,7 @@ int main(){
     printf("Customers start coming\n");
     for(int i=0;i<NUM_OF_CUSTOMERS;i++){
         pthread_create(&Customers[i],NULL,(void *)Customer_Thread,(void *)&i);
+        Wait_Before_Next_Customer_Arrives();
     }
 
     for(int i=0;i<NUM_OF_CUSTOMERS;i++){
