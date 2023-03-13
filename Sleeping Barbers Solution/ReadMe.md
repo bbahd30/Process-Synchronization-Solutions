@@ -1,11 +1,11 @@
 
-Classical Sleeping-Barber problem:
+#Classical Sleeping-Barber problem:#
 This is a very standard problem in process synchronisation, in which there is a hypothetical barber shop,
 having one barber, one barber chair, and N chairs for the customers to wait in.
 The rules are the following:
--> While there are no customers in the shop, the barber sleeps in his own chair.
--> When a customer arrives, he wakes up the barber.
--> If customer arrives and barber is busy giving another customer a haircut and if any of the
+* While there are no customers in the shop, the barber sleeps in his own chair.
+* When a customer arrives, he wakes up the barber.
+* If customer arrives and barber is busy giving another customer a haircut and if any of the
 waiting chair is empty, then the customer occupies the chair and waits for the barber, else the
 customer leaves the shop.
 Solution to the classical problem:
