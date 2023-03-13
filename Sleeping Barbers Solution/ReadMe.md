@@ -25,7 +25,7 @@ any customer in the solution. Next, the customer who will recieve a haircut will
 waiting_cust semaphore, and will release it once he's done getting a haricut.
 The psuedocode for the following solution can be shown as follows:
 
-'''C
+'''c
 semaphore barber_awake=0 //initially the barber is sleeping
 semaphore access_wait_chairs=1 // if this is 1, then the waiting chairs can be incremented or decremented
 semaphore waiting_cust=0 //intially there are no customers in the shop
@@ -58,7 +58,6 @@ Barber(){
         *** CUT HAIR ***
     }while(true);
 }
-
 '''
 
 Now the given problem is the one that consists of multiple barbers, multiple customers and a single queue.
