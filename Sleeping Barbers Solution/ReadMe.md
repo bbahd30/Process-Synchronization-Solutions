@@ -25,7 +25,7 @@ any customer in the solution. Next, the customer who will recieve a haircut will
 waiting_cust semaphore, and will release it once he's done getting a haricut.
 The psuedocode for the following solution can be shown as follows:
 
-'''
+```
 semaphore barber_awake=0 
 semaphore access_wait_chairs=1 
 semaphore waiting_cust=0 
@@ -58,7 +58,7 @@ Barber(){
         *** CUT HAIR ***
     }while(true);
 }
-'''
+```
 
 Now the given problem is the one that consists of multiple barbers, multiple customers and a single queue.
 This can be easily solved without having to use any additional semaphores by using the concept of multithreading.
