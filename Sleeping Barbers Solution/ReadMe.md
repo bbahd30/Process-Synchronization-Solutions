@@ -25,14 +25,14 @@ any customer in the solution. Next, the customer who will recieve a haircut will
 waiting_cust semaphore, and will release it once he's done getting a haricut.
 The psuedocode for the following solution can be shown as follows:
 
-'''c
-semaphore barber_awake=0 //initially the barber is sleeping
-semaphore access_wait_chairs=1 // if this is 1, then the waiting chairs can be incremented or decremented
-semaphore waiting_cust=0 //intially there are no customers in the shop
+'''
+semaphore barber_awake=0 
+semaphore access_wait_chairs=1 
+semaphore waiting_cust=0 
 int FreeSeats=N;
 Customer(){
     do{
-        Down(access_wait_chairs) // a customer initially acquires the semaphore to access the waiting chairs
+        Down(access_wait_chairs)
         
         if(FreeSeats<0){
             Up(access_wait_chairs)
@@ -40,21 +40,21 @@ Customer(){
             continue
         }
         Up(barber_awake)
-        FreeSeats=Freaseats-1 //decrease the number of waiting free seats by 1
-        up(waiting_cust) //indicate that there are waiting customers in the chairs
-        Up(access_wait_chairs) //release this semaphore so that other customers can enter the shop
+        FreeSeats=Freaseats-1 
+        up(waiting_cust) 
+        Up(access_wait_chairs) 
         
-        Down(barber_awake) //wait for the barber to wake up
+        Down(barber_awake) 
         *** GET A HAIRCUT ***
     }while(true)
 }
 Barber(){
     do{
-        Down(waiting_cust) //check whether there are waiting customers in the chairs
-        Down(access_wait_chairs) // this is done so that the barber can check for waiting customers 
+        Down(waiting_cust)
+        Down(access_wait_chairs)  
         FreeSeats=FreeSeats+1
-        Up(access_wait_chairs) // release the hold of chairs now
-        Up(barber_awake) //indicate that the barber is ready to make haircuts
+        Up(access_wait_chairs) 
+        Up(barber_awake)
         *** CUT HAIR ***
     }while(true);
 }
