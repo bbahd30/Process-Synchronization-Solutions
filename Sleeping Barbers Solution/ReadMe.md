@@ -58,9 +58,12 @@ Barber(){
 }
 ```
 
+# Extended Sleeping Barber Problem:  
 Now the given problem is the one that consists of multiple barbers, multiple customers and a single queue.  
 This can be easily solved without having to use any additional semaphores by using the concept of multithreading.  
 A thread which executes Barber() has to be initialised for each barber in the shop.  
 The follwing points must be ensured for the multiple barber problem:
 1) Mutiple barbers should not cut the hair of same customer  
 2) The situation of having only one busy barber while all other barbers are asleep should be avoided  
+To ensure the given conditions are followed, the customers and barbers both follow FCFS order. In case of barber, it is through barber ID.
+The code for the problem is given in the file 'SleepingBarbersSolutionWithoutSemaphore.c'
