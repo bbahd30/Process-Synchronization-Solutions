@@ -3,39 +3,39 @@
 #include<stdlib.h>
 #include<pthread.h>
 
-typedef struct MeraSemaphore{
-    
-    unsigned int valueOfSemaphore;
-    pthread_cond_t conditionVariable;
-    pthread_mutex_t conditionLock;
+struct MeraSemaphore{
+
+    unsigned int ValueOfSemaphore;
+    pthread_cond_t ConditionVariable;
+    pthread_mutex_t ConditionLock;
 
 }Customer_Semaphore,Barber_Semaphore,Mutex_Semaphore;
 
 void sem_wait(struct MeraSemaphore *s){
-    pthread_mutex_lock(&(s->conditionLock));
-    while((s->valueOfSemaphore) == 0){
-        pthread_cond_wait(&(s->conditionVariable), &(s->conditionLock));
+    pthread_mutex_lock(&(s->ConditionLock));
+    while((s->ValueOfSemaphore) == 0){
+        pthread_cond_wait(&(s->ConditionVariable), &(s->ConditionLock));
     }
-    (s->valueOfSemaphore)--;
-    pthread_mutex_unlock(&(s->conditionLock));
+    (s->ValueOfSemaphore)--;
+    pthread_mutex_unlock(&(s->ConditionLock));
 }
 
-void sem_init(struct MeraSemaphore *s, int initialValueOfSemaphore){
-    pthread_cond_init(&(s->conditionVariable), NULL);
-    pthread_mutex_init(&(s->conditionLock), NULL);
-    s->valueOfSemaphore = initialValueOfSemaphore;
+void sem_init(struct MeraSemaphore *s, int InitialValueOfSemaphore){
+    pthread_cond_init(&(s->ConditionVariable), NULL);
+    pthread_mutex_init(&(s->ConditionLock), NULL);
+    s->ValueOfSemaphore = InitialValueOfSemaphore;
     return;
 }
 
 void sem_post(struct MeraSemaphore *s){
-    pthread_mutex_lock(&(s->conditionLock));
-    (s->valueOfSemaphore)++;
-    pthread_cond_signal(&(s->conditionVariable));
-    pthread_mutex_unlock(&(s->conditionLock));
+    pthread_mutex_lock(&(s->ConditionLock));
+    (s->ValueOfSemaphore)++;
+    pthread_cond_signal(&(s->ConditionVariable));
+    pthread_mutex_unlock(&(s->ConditionLock));
 }
 
 void sem_destroy(struct MeraSemaphore *s){
-    while(!(s->valueOfSemaphore)){
+    while(!(s->ValueOfSemaphore)){
         sem_post(s);
     }
     return;
@@ -46,7 +46,6 @@ void sem_destroy(struct MeraSemaphore *s){
 #define NUM_OF_BARBERS 3
 #define NUM_OF_CUSTOMERS 20
 #define MOD 2000
-#define TRUE 1
 
 int NumberOfFreeSeats=NUM_OF_CHAIRS;
 int Seat_To_Customer_Map[NUM_OF_CHAIRS];
@@ -69,8 +68,7 @@ void Barber_Thread(void *ptr){
     int index=*((int*)ptr);
     int Customer_ID=-1,Next_Customer_To_Be_Served;
 
-    while(TRUE){
-
+    while(1){
         sem_wait(&Barber_Semaphore);
         sem_wait(&Mutex_Semaphore);
         Chair_Index=(Chair_Index+1)%NUM_OF_CHAIRS;
