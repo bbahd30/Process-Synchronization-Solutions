@@ -25,12 +25,11 @@ any customer in the solution. Next, the customer who will recieve a haircut will
 waiting_cust semaphore, and will release it once he's done getting a haricut.
 The psuedocode for the following solution can be shown as follows:
 
-'''
+'''C
 semaphore barber_awake=0 //initially the barber is sleeping
 semaphore access_wait_chairs=1 // if this is 1, then the waiting chairs can be incremented or decremented
 semaphore waiting_cust=0 //intially there are no customers in the shop
 int FreeSeats=N;
-
 Customer(){
     do{
         Down(access_wait_chairs) // a customer initially acquires the semaphore to access the waiting chairs
@@ -49,7 +48,6 @@ Customer(){
         *** GET A HAIRCUT ***
     }while(true)
 }
-
 Barber(){
     do{
         Down(waiting_cust) //check whether there are waiting customers in the chairs
