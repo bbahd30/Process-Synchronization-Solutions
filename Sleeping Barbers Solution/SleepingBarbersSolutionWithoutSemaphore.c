@@ -53,16 +53,6 @@ int Next_Seat_To_Be_Occupied=0;
 int Chair_Index=0;
 int Customer_Number=0;
 
-int RandomNumberGenerator(){
-    int x=rand()%MOD+10;
-    srand(time(NULL));
-    return x;
-}
-
-void wait(){
-    usleep(RandomNumberGenerator());
-}
-
 void Barber_Thread(void *ptr){
 
     int index=*((int*)ptr);
