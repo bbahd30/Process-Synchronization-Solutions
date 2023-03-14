@@ -26,5 +26,5 @@ void sem_post(struct Merasemaphore *s){
 }
 
 void sem_destroy(struct Merasemaphore *s){
-    while(&s->value>0)sem_post(s);
+    while(!(s->value))sem_post(s);
 }
