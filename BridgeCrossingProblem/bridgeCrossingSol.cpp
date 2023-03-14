@@ -96,7 +96,7 @@ void *leftCar(void *arg)
         
             currentDirection = -1;
             carsOnBridge++;
-            crossingBridge(carId, -1); // to make the print statement atomic as will cross the bridge, satisfied
+            crossingBridge(carId, -1); 
             pthread_mutex_unlock(&mutex);
 
             sem_wait(&bridgeSem);
