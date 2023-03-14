@@ -41,8 +41,8 @@ Merasemaphore mutex1, mutex2, lock1;
 bool shouldCustomersWait = false;
 
 void* customerBehavior(void* args) {
-	sleep(2);
 	sem_wait(&mutex1);
+	sleep(2);
 	//entering Sushi bar
 	if (shouldCustomersWait) {
 		numberOfCustomersWaiting += 1;
