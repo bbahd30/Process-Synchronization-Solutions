@@ -92,11 +92,12 @@ void *rightCar(void *arg)
         if (carsOnBridge < 3 && (currentDirection == 1 || currentDirection == 0))
         {
             sem_wait(&mutex);
+            sem_post(&emutex);
+
             carsOnBridge++;
             currentDirection = 1;
             crossingBridge(carId, 1);
             sem_post(&mutex);
-            sem_post(&emutex);
 
             sleep(2);
 
@@ -130,11 +131,12 @@ void *leftCar(void *arg)
         if (carsOnBridge < 3 && (currentDirection == -1 || currentDirection == 0))
         {
             sem_wait(&mutex);
+            sem_post(&emutex);
+
             carsOnBridge++;
             currentDirection = -1;
             crossingBridge(carId, -1);
             sem_post(&mutex);
-            sem_post(&emutex);
 
             sleep(2);
 
@@ -193,5 +195,8 @@ int main()
     {
         pthread_join(cars[i], NULL);
     }
+    
+    sem_destroy(&emutex);
+    sem_destroy(&mutex);
     return 0;
 }
