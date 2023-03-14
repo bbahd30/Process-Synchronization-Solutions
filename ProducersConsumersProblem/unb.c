@@ -1,15 +1,15 @@
 #include <pthread.h>
-#include <semaphore.h>
+#include "../Semaphore.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
 
 #define Max 6
 // #define SizeofBuffer 10
-sem_t not_full;
-sem_t not_empty;
+struct Semaphore not_full;
+struct Semaphore not_empty;
 
-FILE *fp;
+// FILE *fp;
 
 struct node
 {
@@ -24,23 +24,23 @@ struct node *end;
 void display()
 {
         struct node *ptr;
-        fp = fopen("Output.txt", "a+");
+        // fp = fopen("Output.txt", "a+");
         if(buffer==NULL)
         {
-                fprintf(fp,"nList is empty:n %d \n",buffer->info);
+                printf("nList is empty:n %d \n",buffer->info);
                 return;
         }
         else
         {
                 ptr=buffer;
-                fprintf(fp,"The List elements are\n");
+                printf("The List elements are\n");
                 while(ptr!=NULL)
                 {
                         printf("%d \n",ptr->info );
                         ptr=ptr->next ;
                 }
         }
-        fclose(fp);
+        // fclose(fp);
 }
 void insert_end(int value)
 {
@@ -52,9 +52,9 @@ void insert_end(int value)
         temp=(struct node *)malloc(sizeof(struct node));
         if(temp==NULL)
         {
-                fp = fopen("Output.txt", "a+");
-                fprintf(fp,"nOut of Memory Space:n\n");
-                fclose(fp);
+                // fp = fopen("Output.txt", "a+");
+                printf("nOut of Memory Space:n\n");
+                // fclose(fp);
                 return;
         }
         temp->info=value;
@@ -75,9 +75,9 @@ int delete_begin()
         struct node *ptr;
         if(buffer==NULL)
         {
-                fp = fopen("Output.txt", "a+");
-                fprintf(fp,"nList is Empty:n\n");
-                fclose(fp);
+                // fp = fopen("Output.txt", "a+");
+                printf("nList is Empty:n\n");
+                // fclose(fp);
                 return -1;
         }
         else
@@ -85,9 +85,9 @@ int delete_begin()
         	int val;
                 ptr=buffer;
                 buffer=buffer->next ;
-                fp = fopen("Output.txt", "a+");
-                fprintf(fp,"nThe deleted element is :%dt\n",ptr->info);
-                fclose(fp);
+                // fp = fopen("Output.txt", "a+");
+                printf("nThe deleted element is :%dt\n",ptr->info);
+                // fclose(fp);
                 val=ptr->info;
                 free(ptr);
                 return val;
@@ -138,18 +138,18 @@ void Producer_Process(void *producer_no)
         // temp->info = object;
         insert_end(object);
         // display();
-        fp = fopen("Output.txt", "a+");
-        fprintf(fp,"Producer %d i: %d Inserted object %d\n",*((int *)producer_no),i,object);
-        fclose(fp);
+        // fp = fopen("Output.txt", "a+");
+        printf("Producer %d i: %d Inserted object %d\n",*((int *)producer_no),i,object);
+        // fclose(fp);
         // in = in+1;
         // in = in%SizeofBuffer;
         pthread_mutex_unlock(&mutex);
         int val;
-        sem_getvalue(&not_empty,&val);
+        // sem_getvalue(&not_empty,&val);
         // printf("not_empty %d \n",val);
         sem_post(&not_empty); //signals notempty     
         // printf("hua %d",i);
-        sem_getvalue(&not_empty,&val);
+        // sem_getvalue(&not_empty,&val);
         // printf("not_empty %d \n",val);
     }
     // printf("value of not_empty%d \n",not_empty);
@@ -171,9 +171,9 @@ void Consumer_Process(void *consumer_no)
         int object;
         object = delete_begin();
         // display();
-        fp = fopen("Output.txt", "a+");
-        fprintf(fp,"Consumer %d i: %d Removed object %d\n",*((int *)consumer_no),i, object);
-        fclose(fp);
+        // fp = fopen("Output.txt", "a+");
+        printf("Consumer %d i: %d Removed object %d\n",*((int *)consumer_no),i, object);
+        // fclose(fp);
         // buffer[out] = -1;
         // out = out+1;
         // out = out%SizeofBuffer;
@@ -194,7 +194,7 @@ int main()
         // fprintf(fp, "This is being written in the file. This is an int variable: %d", myInt);
         
     // sem_init(&not_full, 0, SizeofBuffer);
-    sem_init(&not_empty, 0, 0);
+    sem_init(&not_empty, 0);
     // printf("not_empty %d \n",not_empty);
     // buffer = (int*)malloc(SizeofBuffer * sizeof(int));
 
