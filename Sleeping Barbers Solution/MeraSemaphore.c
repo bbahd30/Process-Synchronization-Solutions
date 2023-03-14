@@ -24,3 +24,7 @@ void sem_init(struct Merasemaphore *s, int value){
 void sem_post(struct Merasemaphore *s){
         atomic_fetch_add(&s->value,1);
 }
+
+void sem_destroy(struct Merasemaphore *s){
+    while(&s->value>0)sem_post(s);
+}
