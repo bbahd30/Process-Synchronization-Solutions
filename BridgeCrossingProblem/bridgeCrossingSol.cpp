@@ -5,7 +5,6 @@
 
 using namespace std;
 
-sem_t bridgeSem; 
 pthread_mutex_t mutex;
 
 int numCars;
@@ -63,9 +62,7 @@ void *rightCar(void *arg)
             crossingBridge(carId, 1);
             pthread_mutex_unlock(&mutex);
 
-            sem_wait(&bridgeSem);
             sleep(1);
-            sem_post(&bridgeSem);
 
             pthread_mutex_lock(&mutex);
             carsOnBridge--;
@@ -93,15 +90,13 @@ void *leftCar(void *arg)
         pthread_mutex_lock(&mutex);
         if (((currentDirection == -1 || currentDirection == 0) && carsOnBridge < 3) || ((currentDirection == 1) && carsOnBridge == 0))
         {
-        
+
             currentDirection = -1;
             carsOnBridge++;
-            crossingBridge(carId, -1); 
+            crossingBridge(carId, -1);
             pthread_mutex_unlock(&mutex);
 
-            sem_wait(&bridgeSem);
             sleep(1);
-            sem_post(&bridgeSem);
 
             pthread_mutex_lock(&mutex);
             carsOnBridge--;
@@ -126,13 +121,12 @@ int main()
     int rightCars, leftCars;
     cout << "Enter the number of cars heading towards left: ";
     cin >> leftCars;
-    
+
     rightCars = numCars - leftCars;
 
     currentDirection = 0;
     carsOnBridge = 0;
 
-    sem_init(&bridgeSem, 0, 3);
     pthread_mutex_init(&mutex, NULL);
 
     pthread_t cars[numCars];
