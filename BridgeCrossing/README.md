@@ -21,9 +21,7 @@ We need a solution that can synchronize the process of the crossing of the given
 
 # Initial Approach
 
-- In our [initial approach](https://github.com/bbahd30/Process-Synchronization-Solutions/blob/master/BridgeCrossingProblem/bridgeCrossingSol.cpp), we solved the problem using two semaphores
-    - `bridgeSemaphore`
-        - This was initialized with the value 3, as the maximum capacity of the bridge is 3, this semaphore ensures access to a maximum of three cars.
+- In our [initial approach](https://github.com/bbahd30/Process-Synchronization-Solutions/blob/master/BridgeCrossingProblem/bridgeCrossingSol.cpp), we solved the problem using a semaphore
     - `mutex`
         - This lock, initialized with 1, ensures that there is no race condition in the reading and updating of the variables that control access to the critical section.
 - We use the threads to show cars that execute the functions depending on whether they are moving toward the left or right.
