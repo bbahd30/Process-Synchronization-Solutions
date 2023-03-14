@@ -5,7 +5,7 @@
 
 using namespace std;
 
-sem_t bridgeSem; //initialsed to maximum no. of cars on bridge i.e. 3
+sem_t bridgeSem; 
 pthread_mutex_t mutex;
 
 int numCars;
