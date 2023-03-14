@@ -1,13 +1,14 @@
 #include <pthread.h>
-#include <semaphore.h>
+#include "../Semaphore.h"
+//#include <semaphore.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #define Max 8
 #define SizeofBuffer 10
 
-sem_t not_full;
-sem_t not_empty;
+struct Semaphore not_full;
+struct Semaphore not_empty;
 int in =0;
 int out = 0;
 static int* buffer;
@@ -59,8 +60,8 @@ int main()
     pthread_t producers[8];
     pthread_t consumers[8];
     pthread_mutex_init(&mutex,NULL);
-    sem_init(&not_full, 0, SizeofBuffer);
-    sem_init(&not_empty, 0, 0);
+    sem_init(&not_full, SizeofBuffer);
+    sem_init(&not_empty, 0);
     buffer = (int*)malloc(SizeofBuffer * sizeof(int));
 
     int nos[8] = {1, 2, 3, 4, 5, 6, 7, 8};
