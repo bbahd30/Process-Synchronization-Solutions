@@ -12,41 +12,53 @@ int numCars;
 int carsOnBridge;
 int currentDirection;
 
+// functions for stimulating car crossing, waiting, arriving and leaving the bridge.
 void crossingBridge(int carId, int direction)
 {
     if (direction == 1)
-        cout << "Car " << carId << " is heading towards right\n";
+    {
+        printf("Car %d (R) ---> ---> crossing.\n", carId);
+    }
     else
-        cout << "Car " << carId << " is heading towards left\n";
-
-    sleep(2);
-    // so that the other cars can also check for crossing
+    {
+        printf("Car %d \t\t\t\t(L) <--- <--- crossing.\n", carId);
+    }
 }
 
 void waitingCar(int carId, int direction)
 {
     if (direction == 1)
-        cout << "Car " << carId << " heading towards right, couldn't cross bridge and waiting.\n";
+    {
+        printf("Car %d (R) ---> ---> waiting.\n", carId);
+    }
     else
-        cout << "Car " << carId << " heading towards left, couldn't cross bridge and waiting.\n";
-
-    sleep(2);
+    {
+        printf("Car %d \t\t\t\t(L) <--- <--- waiting.\n", carId);
+    }
 }
 
 void bridgeArrived(int carId, int direction)
 {
     if (direction == 1)
-        cout << "Car " << carId << " heading towards right arrived.\n";
+    {
+        printf("Car %d (R) ---> ---> arrived.\n", carId);
+    }
     else
-        cout << "Car " << carId << " heading towards left arrived.\n";
+    {
+        printf("Car %d \t\t\t\t(L) <--- <--- arrived.\n", carId);
+    }
 }
 
 void leavingBridge(int carId, int direction)
 {
     if (direction == 1)
-        cout << "Car " << carId << " is leaving bridge from right\n";
+    {
+        printf("Car %d (R) ---> ---> leaving.\n", carId);
+    }
     else
-        cout << "Car " << carId << " is leaving bridge from left\n";
+    {
+        printf("Car %d \t\t\t\t(L) <--- <--- leaving.\n", carId);
+    }
 }
 
 void *rightCar(void *arg)
