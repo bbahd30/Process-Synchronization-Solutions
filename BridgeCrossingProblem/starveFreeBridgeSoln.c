@@ -85,7 +85,7 @@ void *rightCar(void *arg)
 {
     int carId = *(int *)arg;
     bridgeArrived(carId, 1);
-    sem_wait(&emutex);       //semaphore for entering the bridge
+    sem_wait(&emutex);       
     while (1)
     {
 
