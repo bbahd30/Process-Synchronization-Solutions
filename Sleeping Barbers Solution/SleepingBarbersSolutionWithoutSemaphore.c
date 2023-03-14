@@ -19,12 +19,16 @@ void sem_wait(struct Merasemaphore *s){
 }
 
 void sem_init(struct Merasemaphore *s, int value){
-      atomic_init(&s->value,value);
+    atomic_init(&s->value,value);
 }
 
 
 void sem_post(struct Merasemaphore *s){
-        atomic_fetch_add(&s->value,1);
+    atomic_fetch_add(&s->value,1);
+}
+
+void sem_destroy(struct Merasemaphore *s){
+    while(!(s->value))sem_post(s);
 }
 
 #define NUM_OF_CHAIRS 8
