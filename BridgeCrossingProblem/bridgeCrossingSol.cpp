@@ -63,11 +63,11 @@ void leavingBridge(int carId, int direction)
 
 void *rightCar(void *arg)
 {
-    pthread_mutex_lock(&mutex);
     int carId = *(int *)arg;
     bridgeArrived(carId, 1);
     while (true)
     {
+        pthread_mutex_lock(&mutex);
         if (((currentDirection == 1 || currentDirection == 0) && carsOnBridge < 3) || ((currentDirection == -1) && carsOnBridge == 0))
         {
             currentDirection = 1;
@@ -145,33 +145,24 @@ int main()
     pthread_t cars[numCars];
     int threadArgs[numCars];
 
-    // for (int i = 0; i < numCars; i++)
-    // {
-    //     threadArgs[i] = i + 1;
-    // }
-    for (int i = 0; i < numCars; i++)
+    int i = 0;
+    while (i < numCars)
     {
         threadArgs[i] = i + 1;
-        if (rand() % 2 == 0 && rightCars > 0)
+        int randomDirection = rand() % 2;
+        if (randomDirection == 0 && rightCars > 0)
         {
             pthread_create(&cars[i], NULL, rightCar, (void *)&threadArgs[i]);
             rightCars--;
+            i++;
         }
-        else
+        else if (randomDirection == 1 && leftCars > 0)
         {
             pthread_create(&cars[i], NULL, leftCar, (void *)&threadArgs[i]);
+            leftCars--;
+            i++;
         }
     }
-
-    // for (int i = 0; i < rightCars; i++)
-    // {
-    //     pthread_create(&cars[i], NULL, rightCar, (void *)&threadArgs[i]);
-    // }
-
-    // for (int i = rightCars; i < numCars; i++)
-    // {
-    //     pthread_create(&cars[i], NULL, leftCar, (void *)&threadArgs[i]);
-    // }
 
     for (int i = 0; i < numCars; i++)
     {
