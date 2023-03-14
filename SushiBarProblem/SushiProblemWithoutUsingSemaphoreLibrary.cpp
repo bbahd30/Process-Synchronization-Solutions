@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 #include <pthread.h>
 #include <unistd.h>
-#include "MeraSemaphore.cpp"
+#include "Semaphore.cpp"
 #define totalCustomers 18
 
 using namespace std;
@@ -10,7 +10,7 @@ using namespace std;
 // g++ SushiProblemUsingSemaphoreLibrary.cpp -o ex -lpthread
 
 int numberOfCustomersEating = 0, numberOfCustomersWaiting = 0;
-MeraSemaphore mutex1, lock1, mutex2;
+Semaphore mutex1, lock1, mutex2;
 bool shouldCustomersWait = false;
 
 void* customerBehavior(void* args) {

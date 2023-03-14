@@ -7,13 +7,13 @@
 // can be troublesome for a variety of reasons.
 
 //defining a struct
-struct MeraSemaphore{
+struct Semaphore{
     unsigned int valueOfSemaphore;
     pthread_cond_t conditionVariable;
     pthread_mutex_t conditionLock;
 };
 
-void sem_wait(MeraSemaphore *s){
+void sem_wait(Semaphore *s){
     pthread_mutex_lock(&(s->conditionLock));
     while((s->valueOfSemaphore) == 0){
         pthread_cond_wait(&(s->conditionVariable), &(s->conditionLock));
@@ -26,7 +26,7 @@ void sem_wait(MeraSemaphore *s){
     pthread_mutex_unlock(&(s->conditionLock));
 }
 
-void sem_init(MeraSemaphore *s, int initialValueOfSemaphore){
+void sem_init(Semaphore *s, int initialValueOfSemaphore){
     pthread_cond_init(&(s->conditionVariable), NULL);
     pthread_mutex_init(&(s->conditionLock), NULL);
     s->valueOfSemaphore = initialValueOfSemaphore;
@@ -34,7 +34,7 @@ void sem_init(MeraSemaphore *s, int initialValueOfSemaphore){
     return;
 }
 
-void sem_post(MeraSemaphore *s){
+void sem_post(Semaphore *s){
     pthread_mutex_lock(&(s->conditionLock));
     (s->valueOfSemaphore)++;
     pthread_cond_signal(&(s->conditionVariable));
@@ -45,7 +45,7 @@ void sem_post(MeraSemaphore *s){
     pthread_mutex_unlock(&(s->conditionLock));
 }
 
-void sem_destroy(MeraSemaphore *s){
+void sem_destroy(Semaphore *s){
     while(!(s->valueOfSemaphore)){
         sem_post(s);
     }
@@ -53,7 +53,7 @@ void sem_destroy(MeraSemaphore *s){
     // pointed to by sem.
 }
 
-void sem_post(MeraSemaphore *s, int valueByWhichSemaphoreShouldBeIncremented) {
+void sem_post(Semaphore *s, int valueByWhichSemaphoreShouldBeIncremented) {
     pthread_mutex_lock(&(s->conditionLock));
     (s->valueOfSemaphore) += valueByWhichSemaphoreShouldBeIncremented;
     pthread_cond_signal(&(s->conditionVariable));

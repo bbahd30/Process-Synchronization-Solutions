@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <stdatomic.h>
 
-struct Merasemaphore{
+struct Semaphore{
     volatile _Atomic int value;
     volatile atomic_flag mutex;
 
@@ -12,22 +12,22 @@ struct Merasemaphore{
 //order= sempahore to control the entry and exit of readers and writers processes 
 //access_mutex= sempahore to ensure mutual exclusion in critical section
 //read_mutex= semaphore to update readerscount
-void wait(struct Merasemaphore *s){
+void wait(struct Semaphore *s){
     while(atomic_flag_test_and_set(&s->mutex));
     while(atomic_load(&s->value)<=0);
     atomic_fetch_sub(&s->value, 1);
     atomic_flag_clear(&s->mutex);
 }
 
-void sem_init(struct Merasemaphore *s, int value){
+void sem_init(struct Semaphore *s, int value){
       atomic_init(&s->value,value);
 }
 
-void signal(struct Merasemaphore *s){
+void signal(struct Semaphore *s){
         atomic_fetch_add(&s->value,1);
 }
 
-void sem_destroy(struct Merasemaphore *s){
+void sem_destroy(struct Semaphore *s){
     while(!(s->value))signal(s);
 }
 

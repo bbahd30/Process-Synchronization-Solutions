@@ -3,10 +3,10 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdatomic.h>
-#include "../MeraSemaphore.h"
+#include "../Semaphore.h"
 
 pthread_t philosopher[5];
-Merasemaphore chopstick[5];
+Semaphore chopstick[5];
 
 int count[5];
 

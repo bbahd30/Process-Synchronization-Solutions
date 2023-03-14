@@ -11,24 +11,24 @@ typedef struct{
     volatile atomic_int value;
     volatile atomic_flag mutex;
 
-}Merasemaphore;
+}Semaphore;
 
-void sem_wait(Merasemaphore *s) {
+void sem_wait(Semaphore *s) {
     while(atomic_flag_test_and_set(&s->mutex));
     while(atomic_load(&s->value)<=0);
     atomic_fetch_sub(&s->value, 1);
     atomic_flag_clear(&s->mutex);
 }
 
-void sem_init(Merasemaphore *s, int intialValue) {
+void sem_init(Semaphore *s, int intialValue) {
       atomic_init(&s->value, intialValue);
 }
 
-void sem_post(Merasemaphore *s) {
+void sem_post(Semaphore *s) {
         atomic_fetch_add(&s->value,1);
 }
 
-void sem_destroy(Merasemaphore *s){
+void sem_destroy(Semaphore *s){
     while(!(s->value))sem_post(s);
 }
 
@@ -37,7 +37,7 @@ void sem_destroy(Merasemaphore *s){
 // ./ex
 
 int numberOfCustomersEating = 0, numberOfCustomersWaiting = 0;
-Merasemaphore mutex1, mutex2, lock1;
+Semaphore mutex1, mutex2, lock1;
 bool shouldCustomersWait = false;
 
 void* customerBehavior(void* args) {
