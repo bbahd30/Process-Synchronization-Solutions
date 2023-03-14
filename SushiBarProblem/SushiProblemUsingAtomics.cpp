@@ -41,8 +41,9 @@ Merasemaphore mutex1, mutex2, lock1;
 bool shouldCustomersWait = false;
 
 void* customerBehavior(void* args) {
-	sem_wait(&mutex1);
 	sleep(2);
+	sem_wait(&mutex1);
+	//entering Sushi bar
 	if (shouldCustomersWait) {
 		numberOfCustomersWaiting += 1;
 		sem_post(&mutex1);
@@ -62,6 +63,7 @@ void* customerBehavior(void* args) {
 	sleep(12);
 	
     sem_wait(&mutex2);
+    //leaving Sushi bar
 	numberOfCustomersEating -= 1;
 	printf("Customer %d is leaving\n", (*(int*)args + 1));
 	if (numberOfCustomersEating == 0) {
