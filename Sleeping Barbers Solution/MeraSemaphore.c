@@ -2,41 +2,25 @@
 #include<unistd.h>
 #include<stdlib.h>
 #include<pthread.h>
+#include<stdatomic.h>
 
-struct MeraSemaphore{
+struct Merasemaphore{
+    volatile atomic_int value;
+    volatile atomic_flag mutex;
 
-    unsigned int ValueOfSemaphore;
-    pthread_cond_t ConditionVariable;
-    pthread_mutex_t ConditionLock;
+}/*Declare Semaphore Variables here*/;
 
-}/* Declare the Semaphore vairables here*/;
-
-void sem_wait(struct MeraSemaphore *s){
-    pthread_mutex_lock(&(s->ConditionLock));
-    while((s->ValueOfSemaphore) == 0){
-        pthread_cond_wait(&(s->ConditionVariable), &(s->ConditionLock));
-    }
-    (s->ValueOfSemaphore)--;
-    pthread_mutex_unlock(&(s->ConditionLock));
+void sem_wait(struct Merasemaphore *s){
+    while(atomic_flag_test_and_set(&s->mutex));
+    while(atomic_load(&s->value)<=0);
+    atomic_fetch_sub(&s->value, 1);
+    atomic_flag_clear(&s->mutex);
 }
 
-void sem_init(struct MeraSemaphore *s, int InitialValueOfSemaphore){
-    pthread_cond_init(&(s->ConditionVariable), NULL);
-    pthread_mutex_init(&(s->ConditionLock), NULL);
-    s->ValueOfSemaphore = InitialValueOfSemaphore;
-    return;
+void sem_init(struct Merasemaphore *s, int value){
+      atomic_init(&s->value,value);
 }
 
-void sem_post(struct MeraSemaphore *s){
-    pthread_mutex_lock(&(s->ConditionLock));
-    (s->ValueOfSemaphore)++;
-    pthread_cond_signal(&(s->ConditionVariable));
-    pthread_mutex_unlock(&(s->ConditionLock));
-}
-
-void sem_destroy(struct MeraSemaphore *s){
-    while(!(s->ValueOfSemaphore)){
-        sem_post(s);
-    }
-    return;
+void sem_post(struct Merasemaphore *s){
+        atomic_fetch_add(&s->value,1);
 }
