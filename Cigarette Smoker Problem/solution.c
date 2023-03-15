@@ -12,8 +12,8 @@ int SmokerM=0;
 int SmokerP=0;
 int S=Smokers;
 
-Semaphore semT,semP,semM;    //Defining Semaphores for Smokers
-Semaphore semAgent;          //Defining Semaphores for Agent
+struct Semaphore semT,semP,semM;    //Defining Semaphores for Smokers
+struct Semaphore semAgent;          //Defining Semaphores for Agent
      
 int Match = 0;          //Defining Items for smoking
 int Paper = 0;
@@ -169,12 +169,15 @@ void *Agent(void * arg){
 int main(int argc, char *argv[]){
 
 
-sem_init(&semM,0,0);
-sem_init(&semP,0,0);
-sem_init(&semT,0,0);
+// sem_init(&semM,0,0);
+// sem_init(&semP,0,0);
+// sem_init(&semT,0,0);
+sem_init(&semM,0);
+sem_init(&semP,0);
+sem_init(&semT,0);
 
-
-sem_init(&semAgent,0,1);    
+sem_init(&semAgent,1);    
+// sem_init(&semAgent,0,1);    
 
 pthread_t ptSmoker[Smokers],ptAgent;
 
