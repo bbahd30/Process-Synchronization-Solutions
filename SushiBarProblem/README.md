@@ -4,7 +4,7 @@
 
 ## Problem Statement
 
-This is a process synchronization problem in which there is a dining table which can accomodate 5 individuals at a time. Whenever a new custumer comes in, they are accomodated at the table until the table is full. Now, if a new customer comes, they cannot be accomodated at the table and are asked to wait.
+This is a process synchronization problem in which there is a dining table which can accomodate 5 individuals at a time. Whenever a new custumer comes in, they are accomodated at the table until the table is full. Now, if a new customer comes, they cannot be seated at the table and are asked to wait.
 
 However, when a customer leaves, and there is vacant space available at the table, a new customer cannot be accomodated until the whole table leaves, i.e. there is a new crowd at the table. Thus, a customer coming after the table has been occupied to its full capacity can be seated at the table only once the whole table becomes vacant again. 
 
