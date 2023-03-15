@@ -46,7 +46,7 @@ Smoker will wait for agent to put the item once it is being there it will select
 ### Agent
 
 ```c
-void *Agent(void * arg){
+void Agent(){
 
   while (1)
   {
