@@ -25,7 +25,7 @@ any customer in the solution. Next, the customer who will recieve a haircut will
 waiting_cust semaphore, and will release it once he's done getting a haricut.
 The psuedocode for the following solution can be shown as follows:
 
-```
+```python
 semaphore barber_awake=0 
 semaphore access_wait_chairs=1 
 semaphore waiting_cust=0 
