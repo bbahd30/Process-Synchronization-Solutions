@@ -1,16 +1,27 @@
-#include <iostream>
-#include <pthread.h>
-#include <semaphore.h>
+#include <stdio.h>
 #include <unistd.h>
-#include <cstdlib>
+#include <stdlib.h>
+#include <pthread.h>
+#include <stdatomic.h>
+#include "../Semaphore.h"
 
-using namespace std;
+// semaphore emutex -> provides priority access to the car arrived first
+//      releases when allowed to cross bridge (the critical section)
+//      else waits by looping without releasing the semaphore emutex
 
-pthread_mutex_t mutex;
-
+// semaphore mutex -> allows to update the shared variable carsOnBridge, when satisfies the conditon
+//      to prevent the race conditon among the cars on the same side allowed to cross, for updating the value of number of cars on bridge
+struct Semaphore emutex, leftSem, rightSem;
 int numCars;
+int rightCars, leftCars;
 int carsOnBridge;
 int currentDirection;
+int carsToCross[2] = {0};
+
+int min(int num1, int num2)
+{
+    return (num1 > num2) ? num2 : num1;
+}
 
 // functions for stimulating car crossing, waiting, arriving and leaving the bridge.
 void crossingBridge(int carId, int direction)
@@ -64,83 +75,131 @@ void leavingBridge(int carId, int direction)
 void *rightCar(void *arg)
 {
     int carId = *(int *)arg;
+    // as the right car arrives its shows its arrival
+    // after arriving tries to aquire the emutex semaphore to enter the bridge
+    // thus tracking the car arrived first by being aquired by that thread
+
+    // is aquired by the car if there are no other cars waiting for their turn to cross the bridge
+    // as if a car is not allowed to cross, it waits without releasing the mutex semaphore
+    // thus preventing the cars arriving after the waiting car
+    // hence, prevents starvation of the car on opposite side
+
+    sem_wait(&emutex);
     bridgeArrived(carId, 1);
-    while (true)
+    carsToCross[1]++;
+
+    if ((carsToCross[0] == 0) && (carsOnBridge < 3 && (currentDirection == 1 || currentDirection == 0)))
     {
-        pthread_mutex_lock(&mutex);
-        if (((currentDirection == 1 || currentDirection == 0) && carsOnBridge < 3) || ((currentDirection == -1) && carsOnBridge == 0))
+        carsOnBridge++;
+        currentDirection = 1;
+        carsToCross[1]--;
+        sem_post(&rightSem); // allowing to access bridge
+    }
+    sem_post(&emutex);
+
+    sem_wait(&rightSem); // will aquire only if access to bridge allowed by satisfying the conditon
+
+    crossingBridge(carId, 1);
+    sleep(2);
+
+    // sem_post(&emutex);
+    sem_wait(&emutex);
+    leavingBridge(carId, 1);
+    carsOnBridge--;
+
+    if ((carsOnBridge == 0) && carsToCross[0] > 0)
+    {
+        int carWaiting = min(3, carsToCross[0]);
+        currentDirection = 0;
+        while (carWaiting > 0)
         {
-            currentDirection = 1;
+            sem_post(&leftSem);
             carsOnBridge++;
-            crossingBridge(carId, 1);
-            pthread_mutex_unlock(&mutex);
-
-            sleep(1);
-
-            pthread_mutex_lock(&mutex);
-            carsOnBridge--;
-            leavingBridge(carId, 1);
-            pthread_mutex_unlock(&mutex);
-            break;
-        }
-        else
-        {
-            waitingCar(carId, 1);
-            pthread_mutex_unlock(&mutex);
-            sleep(1);
+            carsToCross[0]--;
+            carWaiting--;
         }
     }
+    else if (carsToCross[0] == 0 && carsToCross[1] > 0)
+    {
+        sem_post(&rightSem);
+        carsOnBridge++;
+        carsToCross[1]--;
+    }
+    sem_post(&emutex);
     pthread_exit(NULL);
 }
-
 void *leftCar(void *arg)
 {
+
     int carId = *(int *)arg;
+    // as the right car arrives its shows its arrival
+    // after arriving tries to aquire the emutex semaphore to enter the bridge
+    // thus tracking the car arrived first by being aquired by that thread
+
+    // is aquired by the car if there are no other cars waiting for their turn to cross the bridge
+    // as if a car is not allowed to cross, it waits without releasing the mutex semaphore
+    // thus preventing the cars arriving after the waiting car
+    // hence, prevents starvation of the car on opposite side
+
+    sem_wait(&emutex);
     bridgeArrived(carId, -1);
-
-    while (true)
+    carsToCross[0]++;
+    if ((carsToCross[1] == 0) && (carsOnBridge < 3 && (currentDirection == -1 || currentDirection == 0)))
     {
-        pthread_mutex_lock(&mutex);
-        if (((currentDirection == -1 || currentDirection == 0) && carsOnBridge < 3) || ((currentDirection == 1) && carsOnBridge == 0))
-        {
+        carsOnBridge++;
+        currentDirection = -1;
+        carsToCross[0]--;
+        sem_post(&leftSem); // allowing to access bridge
+    }
+    sem_post(&emutex);
 
-            currentDirection = -1;
+    sem_wait(&leftSem); // will aquire only if access to bridge allowed by satisfying the conditon
+
+    crossingBridge(carId, -1);
+    sleep(2);
+
+    // sem_post(&emutex);
+    sem_wait(&emutex);
+    leavingBridge(carId, -1);
+    carsOnBridge--;
+
+    if ((carsOnBridge == 0) && carsToCross[1] > 0)
+    {
+        int carWaiting = min(3, carsToCross[1]);
+        currentDirection = 0;
+        while (carWaiting > 0)
+        {
+            sem_post(&rightSem);
             carsOnBridge++;
-            crossingBridge(carId, -1);
-            pthread_mutex_unlock(&mutex);
-
-            sleep(1);
-
-            pthread_mutex_lock(&mutex);
-            carsOnBridge--;
-            leavingBridge(carId, -1);
-            pthread_mutex_unlock(&mutex);
-            break;
-        }
-        else
-        {
-            waitingCar(carId, -1);
-            pthread_mutex_unlock(&mutex);
-            sleep(1);
+            carsToCross[1]--;
+            carWaiting--;
         }
     }
+    else if (carsToCross[1] == 0 && carsToCross[0] > 0)
+    {
+        sem_post(&leftSem);
+        carsOnBridge++;
+        carsToCross[0]--;
+    }
+    sem_post(&emutex);
     pthread_exit(NULL);
 }
 
 int main()
 {
-    cout << "Enter the number of cars: ";
-    cin >> numCars;
-    int rightCars, leftCars;
-    cout << "Enter the number of cars heading towards left: ";
-    cin >> leftCars;
+    printf("Enter the number of cars: ");
+    scanf("%d", &numCars);
+    printf("Enter the number of cars heading towards left: ");
+    scanf("%d", &leftCars);
 
     rightCars = numCars - leftCars;
 
     currentDirection = 0;
     carsOnBridge = 0;
 
-    pthread_mutex_init(&mutex, NULL);
+    sem_init(&emutex, 1);
+    sem_init(&leftSem, 0);
+    sem_init(&rightSem, 0);
 
     pthread_t cars[numCars];
     int threadArgs[numCars];
@@ -168,5 +227,9 @@ int main()
     {
         pthread_join(cars[i], NULL);
     }
+
+    sem_destroy(&emutex);
+    sem_destroy(&leftSem);
+    sem_destroy(&rightSem);
     return 0;
 }
