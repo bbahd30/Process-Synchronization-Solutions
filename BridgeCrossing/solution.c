@@ -40,7 +40,7 @@ void bridgeArrived(int carId, int direction)
 {
     if (direction == 1)
     {
-        printf("Car %d (R) ---> ---> arrived.\n", carId);
+        printf("Car %d (R) ---> ---> arrived.\n", 1);
     }
     else
     {
