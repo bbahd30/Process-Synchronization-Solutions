@@ -8,7 +8,7 @@ This is a process synchronization problem in which there is a dining table which
 
 However, when a customer leaves, and there is vacant space available at the table, a new customer cannot be accomodated until the whole table leaves, i.e. there is a new crowd at the table. Thus, a customer coming after the table has been occupied to its full capacity can be seated at the table only once the whole table becomes vacant again. 
 
-A simple solution to this can be implemented using two binary semaphores, a counting semaphore and an integer variable.
+A simple solution to this can be implemented using three binary semaphores, an integer variable and a boolean variable.
 These are as follows:
 
 1) mutex1 : A binary Semaphore to ensure mutual exclusive access of a customer(process) to the Critical Region while entering.
