@@ -19,12 +19,87 @@ We need a solution that can synchronize the process of the crossing of the given
     Any car that is waiting to cross the bridge should eventually be granted access, even if there are other cars waiting to cross to ensure that no car is waiting indefinitely and all get equal chances.
     
 
-# StarveFree Solution
+## **Solution I**
+
+- In this [solution](https://github.com/bbahd30/Process-Synchronization-Solutions/blob/master/BridgeCrossing/initialSolution.cpp), we solved the problem using two semaphores
+    - `emutex`
+        - This was initialized with the value 1, and was governing the mutual exclusion between the cars.
+    - `mutex`
+        - This lock, initialized with 1, ensures that there is no race condition in the reading and updating of the variables that control access to the critical section.
+- We use the threads to show cars that execute the functions depending on whether they are moving toward the left or right.
+- In this solution,
+    - We first lock `emutex` to allow entry only to a single thread at a time to read variables.
+        - `currentDirection` is 0 if no direction has been set, else `1` for right and `-1` for left.
+        - `carsOnBridge` shows the number of cars currently running on the bridge.
+    - Then the `while` loop runs till the threads find the condition of entering the bridge satisfied.
+        - The condition states that if the current direction is not set or is the same as of the car and the current number of cars is less than the maximum capacity then the current car is allowed to enter the bridge.
+            - When allowed it aquires the `mutex` semaphore to update variables.
+            - After which it sets `currentDirection` and increments `carsOnBridge`.
+            - Decrements the cars waiting to cross the bridge, on its side.
+            - After crossing the bridge it unlocks the `mutex` and `emutex`.
+        - If not, then the car waits inside the loop.
+- The function to execute for the right-moving cars is as follows:
+
+    ```cpp
+    void *rightCar(void *arg)
+    {
+        int carId = *(int *)arg;
+        bridgeArrived(carId, 1);
+        pthread_mutex_lock(&emutex);
+        while (true)
+        {
+            if (carsOnBridge < 3 && (currentDirection == 1 || currentDirection == 0))
+            {
+                pthread_mutex_lock(&mutex);
+                carsOnBridge++;
+                carsToCross[1]--;
+
+                currentDirection = 1;
+                crossingBridge(carId, 1);
+                pthread_mutex_unlock(&mutex);
+                pthread_mutex_unlock(&emutex);
+
+                sleep(2);
+
+                pthread_mutex_lock(&mutex);
+                carsOnBridge--;
+                leavingBridge(carId, 1);
+                if (carsOnBridge == 0 ){
+                    currentDirection = 0;
+                }
+                pthread_mutex_unlock(&mutex);
+                break;
+            }
+
+        }
+        pthread_exit(NULL);
+    }
+    ```
+
+    Similar to the `leftCar`.
+
+
+### Analysis
+
+- The above-stated solution satisfies the 3 parameters stated at the beginning to the following extent:
+    - Mutual Exclusion
+        - `mutex` lock allows the single thread exclusion.
+        - `emutex` semaphore allows the cars to cross in the same order.
+    - Progress
+        - Any car that arrives gets a chance to cross the bridge, hence providing progress.
+        - `currentDirection` and semaphores ensure that there is no deadlock.
+    - Bounded Waiting
+        - Any car that reaches when the `currentDirection` is the same as its direction then the car is allowed to go.
+            - this ensures that any car arriving is getting the chance to cross the bridge and is not waiting indefinitely. Hence, providing bounded waiting.
+
+    - Thus the solution is starvation and deadlock free.
+- However, this program runs with the use of `pthread_mutex`, but on including the common `Semaphore.h` file, we aren't able to get the same order to cross the bridge as of the arrival of the cars, due to the `atomic library` we are using, as it doesn't implement the queue for the process waiting for acquiring it.
+
+
+## **Solution II** 
 
 - In our [StarveFree Solution](https://github.com/bbahd30/Process-Synchronization-Solutions/blob/master/BridgeCrossing/solution.c), we solved the problem using three semaphores.
-- We use the threads to show cars that execute the functions depending on whether they are moving toward the left or right, which are being generated randomly.
-- We use an array `carsToCross` that stores a number of cars left to cross from right at first position and from left in the second position.
-- In this StarveFree solution,
+- In this solution,
     - The thread initialized with `rightCar` function acquires the `emutex` semaphore to have mutual exclusion between the cars arriving.
     - After showing its arrival, it increments the its value in the array `carsToCross[1]`, the index is decided based on the direction of the car.
     - The condition of crossing the bridge is checked by looking that the cars on the bridge is less than 3 and the current direction in which cars are moving is same as of the current car.
