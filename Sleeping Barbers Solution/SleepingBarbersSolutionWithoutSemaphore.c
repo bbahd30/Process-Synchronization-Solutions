@@ -10,30 +10,36 @@
 #define NUMBER_OF_CUSTOMERS 20
 #define MOD 800000
 
-struct Merasemaphore{
-    volatile atomic_int value;
-    volatile atomic_flag mutex;
+struct Semaphore{
+    volatile atomic_int value;      //Value of the semaphore
+    volatile atomic_flag mutex;     //Flag to ensure mutual exclusion, it is lock free atomic_bool tye variable
 
-}BarberSleep,WaitingCustomer,AccessWaitChairs,BarberSemaphore[NUMBER_OF_BARBERS];
+}AccessWaitChairs,WaitingCustomer,BarberSemaphore[NUMBER_OF_BARBERS],BarberSleep;
 
-void sem_wait(struct Merasemaphore *s){
-    while(atomic_flag_test_and_set(&s->mutex));
-    while(atomic_load(&s->value)<=0);
-    atomic_fetch_sub(&s->value, 1);
-    atomic_flag_clear(&s->mutex);
+void sem_wait(struct Semaphore *s){ 
+    while(atomic_flag_test_and_set(&s->mutex));     //sets the variable mutex to true atomically 
+    while(atomic_load(&s->value)<=0);               //wait until the value of the semaphore is positive
+    atomic_fetch_sub(&s->value, 1);                 //subtract one from semaphore
+    atomic_flag_clear(&s->mutex);                   //release mutex, and set the variable to false atomically
 }
 
-void sem_init(struct Merasemaphore *s, int value){
-    atomic_init(&s->value,value);
+void sem_init(struct Semaphore *s, int value){
+      atomic_init(&s->value,value);         //initialises the value of the semaphore non-atomically
 }
 
-void sem_post(struct Merasemaphore *s){
-    atomic_fetch_add(&s->value,1);
+void sem_post(struct Semaphore *s){
+        atomic_fetch_add(&s->value,1);      //increments the value of the semaphore by 1 (which is non-atomic) atomically
 }
 
-void sem_destroy(struct Merasemaphore *s){
-    while(!(s->value))sem_post(s);
+void sem_destroy(struct Semaphore *s){
+    while(!(s->value))sem_post(s);         //this function destroys the semaphore which was previously initiated with the function sem_init()
 }
+
+
+int ChairIndexOfFirstWaitingCustomer;
+int SeatToCustomerMap[NUMBER_OF_CHAIRS];
+int NumberOfFreeWaitingChairs;
+int NextSeatToBeOccupied;
 
 int RandomNumberGenerator(){
     int x=rand()%MOD+100;
@@ -44,11 +50,6 @@ int RandomNumberGenerator(){
 void Wait_Before_Next_Customer_Arrives(){
     usleep(RandomNumberGenerator());
 }
-
-int ChairIndexOfFirstWaitingCustomer;
-int SeatToCustomerMap[NUMBER_OF_CHAIRS];
-int NumberOfFreeWaitingChairs;
-int NextSeatToBeOccupied;
 
 void BarberThread(void *ptr){
     int Index=*((int *)ptr)+1;
