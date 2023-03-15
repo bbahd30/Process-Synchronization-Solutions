@@ -120,7 +120,8 @@ int delete_begin()
 // }
 // static int* buffer;
 
-pthread_mutex_t mutex;
+// pthread_mutex_t mutex;
+struct Semaphore mutex;
 
 void Producer_Process(void *producer_no)
 {
@@ -133,7 +134,8 @@ void Producer_Process(void *producer_no)
         // }
          // pass the srand() parameter  
         object = rand(); 
-        pthread_mutex_lock(&mutex);
+        // pthread_mutex_lock(&mutex);
+        sem_wait(&mutex);
         // struct node* temp;
         // temp->info = object;
         insert_end(object);
@@ -143,7 +145,8 @@ void Producer_Process(void *producer_no)
         // fclose(fp);
         // in = in+1;
         // in = in%SizeofBuffer;
-        pthread_mutex_unlock(&mutex);
+        // pthread_mutex_unlock(&mutex);
+        sem_post(&mutex);
         int val;
         // sem_getvalue(&not_empty,&val);
         // printf("not_empty %d \n",val);
@@ -166,7 +169,8 @@ void Consumer_Process(void *consumer_no)
         // {
         // 	out=0;
         // }
-        pthread_mutex_lock(&mutex);
+        // pthread_mutex_lock(&mutex);
+        sem_wait(&mutex);
         // int object = buffer[out];
         int object;
         object = delete_begin();
@@ -177,7 +181,8 @@ void Consumer_Process(void *consumer_no)
         // buffer[out] = -1;
         // out = out+1;
         // out = out%SizeofBuffer;
-        pthread_mutex_unlock(&mutex);
+        // pthread_mutex_unlock(&mutex);
+        sem_post(&mutex);
         // sem_post(&not_full); //signals not_full
     }
 }
@@ -187,7 +192,8 @@ int main()
 	int n=10;
     pthread_t producers[n];
     pthread_t consumers[n];
-    pthread_mutex_init(&mutex,NULL);
+//     pthread_mutex_init(&mutex,NULL);
+        sem_init(&mutex,1);
 //     FILE *fp;
         // int myInt = 5;
         // fp = fopen("Output.txt", "a+");// "a+" means that we are going to write on this file
@@ -244,7 +250,8 @@ int main()
         pthread_join(consumers[i], NULL);
     }
 	display();
-    pthread_mutex_destroy(&mutex);
+//     pthread_mutex_destroy(&mutex);
+sem_destroy(&mutex);
     sem_destroy(&not_empty);
     sem_destroy(&not_full);
     return 0;
