@@ -10,6 +10,7 @@
 int SmokerT=0;
 int SmokerM=0;
 int SmokerP=0;
+int S=Smokers;
 
 Semaphore semT,semP,semM;    //Defining Semaphores for Smokers
 Semaphore semAgent;          //Defining Semaphores for Agent
@@ -126,6 +127,16 @@ void *Agent(void * arg){
 
         int id=rand()%3;        //Agent Selecting A random Item
 
+        //Remove this Segment to make it run for infinite times.
+        if(SmokerT>S && id==0)         
+        id=id+1;
+        if(SmokerP>S && id==1)
+        id=id+1;
+        if(SmokerM>S && id==2)
+        id=0;
+        
+        
+       
         switch (id)
         {
         case 0:             //Agent putting Paper and Match
