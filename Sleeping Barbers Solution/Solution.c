@@ -71,7 +71,6 @@ void BarberThread(void *ptr){
         NumberOfFreeWaitingChairs++;
         printf("Barber %d cuts the hair of the customer %d\n",Index,CustomerID);
         sleep(HAIRCUT_TIME); 
-        // printf("Barber %d has finished cutting the hair of customer %d\n",Index,CustomerID);       
         sem_post(&BarberSemaphore[Index-1]);
     }
     pthread_exit(0);
@@ -103,7 +102,6 @@ void CustomerThread(void *ptr){
     sem_post(&AccessWaitChairs);
     sem_post(&WaitingCustomer);
     sem_wait(&BarberSleep);
-    // sem_wait(&BarberSemaphore[NextFreeBarber]);
 
     /*      GET A HAIRCUT         */
 }
