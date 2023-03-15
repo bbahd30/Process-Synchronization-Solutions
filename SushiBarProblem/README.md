@@ -17,7 +17,7 @@ It is initialized to 1.
 2) mutex2 : A binary Semaphore to ensure mutual exclusive access of a customer(process) to the Critical Region while leaving.
 It is initialized to 1.
 
-3) lock : A binary Semaphore to ensure that no new customer(process) can be seated at the table once the table becomes full.
+3) block : A binary Semaphore to ensure that no new customer(process) can be seated at the table once the table becomes full.
 It is initialized to 0.
 
 4) eating : An integer variable acting as a counter to count the number of customers seated at the table.
