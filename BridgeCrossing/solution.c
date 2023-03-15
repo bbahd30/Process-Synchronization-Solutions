@@ -46,7 +46,7 @@ void bridgeArrived(int carId, int direction)
 {
     if (direction == 1)
     {
-        printf("Car %d (R) ---> ---> arrived.\n", carId);
+        printf("Car %d (R) ---> ---> arrived.\n", 1);
     }
     else
     {
@@ -169,17 +169,15 @@ int main()
     for (int i = 0; i < numCars; i++)
     {
         threadArgs[i] = i + 1;
-        int randomDirection = rand() % 2;
-        if (randomDirection == 0 && rightCars > 0)
-        {
-            pthread_create(&cars[i], NULL, rightCar, (void *)&threadArgs[i]);
-            rightCars--;
-        }
-        else if (randomDirection == 1 && leftCars > 0)
-        {
-            pthread_create(&cars[i], NULL, leftCar, (void *)&threadArgs[i]);
-            leftCars--;
-        }
+    }
+    for (int i = 0; i < rightCars; i++)
+    {
+        pthread_create(&cars[i], NULL, rightCar, (void *)&threadArgs[i]);
+    }
+
+    for (int i = rightCars; i < numCars; i++)
+    {
+        pthread_create(&cars[i], NULL, leftCar, (void *)&threadArgs[i]);
     }
 
     for (int i = 0; i < numCars; i++)
