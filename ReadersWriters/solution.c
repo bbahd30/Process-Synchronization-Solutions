@@ -2,62 +2,37 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <stdatomic.h>
+#include "../Semaphore.h"
 
-struct Semaphore{
-    volatile _Atomic int value;
-    volatile atomic_flag mutex;
-
-}read_mutex,access_mutex,order; 
-//order= sempahore to control the entry and exit of readers and writers processes 
-//access_mutex= sempahore to ensure mutual exclusion in critical section
-//read_mutex= semaphore to update readerscount
-void wait(struct Semaphore *s){
-    while(atomic_flag_test_and_set(&s->mutex));
-    while(atomic_load(&s->value)<=0);
-    atomic_fetch_sub(&s->value, 1);
-    atomic_flag_clear(&s->mutex);
-}
-
-void sem_init(struct Semaphore *s, int value){
-      atomic_init(&s->value,value);
-}
-
-void signal(struct Semaphore *s){
-        atomic_fetch_add(&s->value,1);
-}
-
-void sem_destroy(struct Semaphore *s){
-    while(!(s->value))signal(s);
-}
+struct Semaphore read_mutex,order,access_mutex;
 
 int shared_data=10; // data to be shared by readers and writers
 
 int readerscount=0; // number of readers reading 
 
 void *reader_function(void*rid){
-    usleep(10);
+    
     int i=*((int *)rid);
-    wait(&order); // wait if any readers are reading or writers are writing
-    wait(&read_mutex); // readerscount modification
+    sem_wait(&order); // wait if any readers are reading or writers are writing
+    sem_wait(&read_mutex); // readerscount modification
 
     readerscount++;
 
     if(readerscount==1){
-        wait(&access_mutex); // makes writer process wait for critical section if atleast 1 reader is reading already
+        sem_wait(&access_mutex); // makes writer process wait for critical section if atleast 1 reader is reading already
     }
 
-    signal(&read_mutex); //readerscount modification finished
-    signal(&order); //frees process for writer to enter
+    sem_post(&read_mutex); //readerscount modification finished
+    sem_post(&order); //frees process for writer to enter
 
     /*critical section*/
     printf("Reader %i is reading data %i \n",i,shared_data); 
 
-    wait(&read_mutex); //readerscount modification
+    sem_wait(&read_mutex); //readerscount modification
     readerscount--;
-    signal(&read_mutex); //readerscount modification finished
+    sem_post(&read_mutex); //readerscount modification finished
     if(readerscount==0){
-        signal(&access_mutex); //if no readers are reading then gives acces of critical section to writer process
+        sem_post(&access_mutex); //if no readers are reading then gives acces of critical section to writer process
     }
     
     return 0;
@@ -65,13 +40,12 @@ void *reader_function(void*rid){
 
 void *writer_function(void *wid){
     
-    usleep(10);
     int i=*((int *)wid);
     
-    wait(&order); // wait if any readers are reading or writers are writing
-    wait(&access_mutex); // wait for critical section if any other process is on critical section
+    sem_wait(&order); // wait if any readers are reading or writers are writing
+    sem_wait(&access_mutex); // wait for critical section if any other process is on critical section
     
-    signal(&order); //frees entry of any other process
+    sem_post(&order); //frees entry of any other process
     
     /*critical section*/
 
@@ -79,7 +53,7 @@ void *writer_function(void *wid){
     printf("writer %i is writing data= %i \n",i,shared_data); 
 
 
-    signal(&access_mutex); //frees access to critical section
+    sem_post(&access_mutex); //frees access to critical section
     
     return 0;
 }
