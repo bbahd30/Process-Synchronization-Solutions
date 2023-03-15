@@ -5,7 +5,6 @@
 #include <stdio.h>
 
 #define Max 6
-struct Semaphore not_full;
 struct Semaphore not_empty;
 
 struct node
@@ -140,7 +139,6 @@ int main()
 
         sem_destroy(&mutex);
         sem_destroy(&not_empty);
-        sem_destroy(&not_full);
 
     return 0;
 }

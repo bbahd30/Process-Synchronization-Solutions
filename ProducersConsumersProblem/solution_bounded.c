@@ -46,7 +46,7 @@ void Consumer_Process(void *consumer_no)
         sem_wait(&mutex);
         int object = buffer[out];
         printf("Consumer %d Removed object %d at %d \n",*((int *)consumer_no), buffer[out],out);
-        buffer[out] = -1;
+        //buffer[out] = -1;
         out = out+1;
         sem_post(&mutex);
         sem_post(&not_full); 
