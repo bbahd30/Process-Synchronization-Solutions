@@ -44,17 +44,23 @@ The pseudocode for the solution is as follows:
 
 
 mutex1.wait() 
+
 if must_wait:
   waiting += 1 
   mutex1.signal() 
   block.wait()
   //thread blocked
+  
 else:
   eating += 1
   must_wait = (eating == 5)
   //updating the value of boolean
   mutex1.signal()
+  
+  
 // Time to eat sushi
+
+
 mutex2.wait() 
 eating -= 1
 if eating == 0:
@@ -62,10 +68,12 @@ if eating == 0:
   // n is an int denoting the number of customers in the next round
   waiting -= n
   eating += n
+  
   must_wait = (eating == 5)
   //updating the boolean variable
   block.signal(n)
   //signalling a thread to wake up
+  
 mutex2.signal()
 
 ```
