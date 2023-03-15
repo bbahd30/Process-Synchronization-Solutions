@@ -1,4 +1,4 @@
-# CSN-232 Cigrattes Smokers Problem 
+# CSN-232 Cigarette Smokers Problem 
 
 ## Problem Statement
 
