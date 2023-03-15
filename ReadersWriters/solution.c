@@ -11,7 +11,7 @@ int shared_data=10; // data to be shared by readers and writers
 int readerscount=0; // number of readers reading 
 
 void *reader_function(void*rid){
-    usleep(10);
+    
     int i=*((int *)rid);
     sem_wait(&order); // wait if any readers are reading or writers are writing
     sem_wait(&read_mutex); // readerscount modification
@@ -40,7 +40,6 @@ void *reader_function(void*rid){
 
 void *writer_function(void *wid){
     
-    usleep(10);
     int i=*((int *)wid);
     
     sem_wait(&order); // wait if any readers are reading or writers are writing
