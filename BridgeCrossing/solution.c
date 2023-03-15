@@ -40,7 +40,7 @@ void bridgeArrived(int carId, int direction)
 {
     if (direction == 1)
     {
-        printf("Car %d (R) ---> ---> arrived.\n", 1);
+        printf("Car %d (R) ---> ---> arrived.\n", carId);
     }
     else
     {
@@ -120,15 +120,6 @@ void *leftCar(void *arg)
 {
 
     int carId = *(int *)arg;
-    // as the right car arrives its shows its arrival
-    // after arriving tries to aquire the emutex semaphore to enter the bridge
-    // thus tracking the car arrived first by being aquired by that thread
-
-    // is aquired by the car if there are no other cars waiting for their turn to cross the bridge
-    // as if a car is not allowed to cross, it waits without releasing the mutex semaphore
-    // thus preventing the cars arriving after the waiting car
-    // hence, prevents starvation of the car on opposite side
-
     sem_wait(&emutex);
     bridgeArrived(carId, -1);
     carsToCross[0]++;
