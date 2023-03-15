@@ -84,5 +84,5 @@ The above code is an example for Agent, After Selecting an item randomly the age
  
  
 In the code we can change the number of smokers `n` , and the code will run till all smokers smoked n times. By `Removing 2 segments ` mentioned in the code the code will run for `infinite times`.
-I let that Smoker have to smoke atlease n times, after that, That particular smoker will not smoke again. 
+I let that Smoker have to smoke atlease n+1 times, after that, That particular smoker will not smoke again. 
 Thus This is the solution for `Cigarette Smoker Problem Starvation free and Deadlock Free`.
