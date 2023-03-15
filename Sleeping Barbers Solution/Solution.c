@@ -11,35 +11,35 @@
 #define MOD 800000
 
 struct Semaphore{
-    volatile atomic_int value;      //Value of the semaphore
-    volatile atomic_flag mutex;     //Flag to ensure mutual exclusion, it is lock free atomic_bool tye variable
+    volatile atomic_int value;
+    volatile atomic_flag mutex;
 
-}AccessWaitChairs,WaitingCustomer,BarberSemaphore[NUMBER_OF_BARBERS],BarberSleep;
+}BarberSleep,AccessWaitChairs,WaitingCustomer,BarberSemaphore[NUMBER_OF_BARBERS];
 
-void sem_wait(struct Semaphore *s){ 
-    while(atomic_flag_test_and_set(&s->mutex));     //sets the variable mutex to true atomically 
-    while(atomic_load(&s->value)<=0);               //wait until the value of the semaphore is positive
-    atomic_fetch_sub(&s->value, 1);                 //subtract one from semaphore
-    atomic_flag_clear(&s->mutex);                   //release mutex, and set the variable to false atomically
+void sem_wait(struct Semaphore *s){
+    while(atomic_flag_test_and_set(&s->mutex));
+    while(atomic_load(&s->value)<=0);
+    atomic_fetch_sub(&s->value, 1);
+    atomic_flag_clear(&s->mutex);
 }
 
 void sem_init(struct Semaphore *s, int value){
-      atomic_init(&s->value,value);         //initialises the value of the semaphore non-atomically
+    atomic_init(&s->value,value);
 }
 
 void sem_post(struct Semaphore *s){
-        atomic_fetch_add(&s->value,1);      //increments the value of the semaphore by 1 (which is non-atomic) atomically
+    atomic_fetch_add(&s->value,1);
 }
 
 void sem_destroy(struct Semaphore *s){
-    while(!(s->value))sem_post(s);         //this function destroys the semaphore which was previously initiated with the function sem_init()
+    atomic_store(&s->value,1);
 }
-
 
 int ChairIndexOfFirstWaitingCustomer;
 int SeatToCustomerMap[NUMBER_OF_CHAIRS];
 int NumberOfFreeWaitingChairs;
 int NextSeatToBeOccupied;
+int NextFreeBarber;
 
 int RandomNumberGenerator(){
     int x=rand()%MOD+100;
@@ -66,11 +66,12 @@ void BarberThread(void *ptr){
 
         sem_post(&AccessWaitChairs);
         sem_post(&BarberSleep);
-
+        NextFreeBarber=(NextFreeBarber+1)%NUMBER_OF_BARBERS;
         sem_wait(&BarberSemaphore[Index-1]);
         NumberOfFreeWaitingChairs++;
         printf("Barber %d cuts the hair of the customer %d\n",Index,CustomerID);
-        sleep(HAIRCUT_TIME);        
+        sleep(HAIRCUT_TIME); 
+        // printf("Barber %d has finished cutting the hair of customer %d\n",Index,CustomerID);       
         sem_post(&BarberSemaphore[Index-1]);
     }
     pthread_exit(0);
@@ -102,6 +103,7 @@ void CustomerThread(void *ptr){
     sem_post(&AccessWaitChairs);
     sem_post(&WaitingCustomer);
     sem_wait(&BarberSleep);
+    // sem_wait(&BarberSemaphore[NextFreeBarber]);
 
     /*      GET A HAIRCUT         */
 }
@@ -122,6 +124,7 @@ int main(){
     NextSeatToBeOccupied=0;
     NumberOfFreeWaitingChairs=NUMBER_OF_CHAIRS;
     ChairIndexOfFirstWaitingCustomer=0;
+    NextFreeBarber=0;
 
     printf("Opening the shop\n");
 
