@@ -166,7 +166,8 @@ int main()
     pthread_t cars[numCars];
     int threadArgs[numCars];
 
-    for (int i = 0; i < numCars; i++)
+    int i = 0;
+    while (i < numCars)
     {
         threadArgs[i] = i + 1;
         int randomDirection = rand() % 2;
@@ -174,11 +175,13 @@ int main()
         {
             pthread_create(&cars[i], NULL, rightCar, (void *)&threadArgs[i]);
             rightCars--;
+            i++;
         }
         else if (randomDirection == 1 && leftCars > 0)
         {
             pthread_create(&cars[i], NULL, leftCar, (void *)&threadArgs[i]);
             leftCars--;
+            i++;
         }
     }
 
