@@ -10,7 +10,7 @@ struct Semaphore not_empty;
 
 struct node
 {
-        int info;
+        int value;
         struct node *next;
 };
 
@@ -23,7 +23,7 @@ void display()
         struct node *ptr;
         if(buffer==NULL)
         {
-                printf("List is empty%d \n",buffer->info);
+                printf("List is empty%d \n",buffer->value);
                 return;
         }
         else
@@ -32,7 +32,7 @@ void display()
                 printf("The List elements are\n");
                 while(ptr!=NULL)
                 {
-                        printf("%d \n",ptr->info );
+                        printf("%d \n",ptr->value );
                         ptr=ptr->next ;
                 }
         }
@@ -46,7 +46,7 @@ void add_to_buffer(int value)
                 printf("Out of Memory Space:n\n");
                 return;
         }
-        temp->info=value;
+        temp->value=value;
         temp->next =NULL;
         if(buffer==NULL)
         {
@@ -73,7 +73,7 @@ int remove_from_buffer()
         	int val;
                 ptr=buffer;
                 buffer=buffer->next ;
-                val=ptr->info;
+                val=ptr->value;
                 free(ptr);
                 return val;
                 

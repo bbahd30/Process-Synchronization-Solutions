@@ -12,7 +12,7 @@ Three types of buffer are explained in this solution <br>
 ### Solution 
 #### Bounded:
 The buffer is bounded i.e. it has a defined capacity, if the producer produces objects greater than it's capacity then it has to wait for objects to be consumed inorder to produce more. The major semaphores used are not_full, not_empty and mutex. The `not_full` semaphore indicates that the buffer hasn't reached it's capacity. The `not_empty` semaphore indicates that the buffer isn't empty and `mutex` ensures mutual exclusion for critical section.
-
+###### Producer and Consumer functions:
 ```c
 void Producer_Process(void *producer_no)
 {
@@ -54,6 +54,7 @@ void Consumer_Process(void *consumer_no)
 ```
 #### Cyclic:
 In this case the buffer is implemented such that the producer never waits, if the buffer is full it will start replacing the elements from the start. The consumer has to wait if the buffer is empty otherwise it can consume. Here we do not need `not_full` semaphore.
+###### Producer and Consumer functions:
 ```c
 void Producer_Process(void *producer_no)
 {
@@ -92,14 +93,30 @@ void Consumer_Process(void *consumer_no)
 #### Unbounded Buffer 
 In this case there is no limit on the size of the buffer. Thus, in this case the `not_full` semaphore used in the bounded buffer case is not required. In this case the producer never waits. `mutex` semphore ensures mutual exclusion of the processes.
 We have implemented a linked list structure for implementing the infinite buffer.
+###### Unbounded buffer structure implementation:
 ```c
 struct node
 {
-        int info;
+        int value;
         struct node *next;
 };
 
+void add_to_buffer(int value)
+{
+    //adds the newly produced object
+}
+
+void remove_from_buffer()
+{
+    //removes from buffer
+}
+
+void display()
+{
+    //displays all the elements
+}
 ```
+###### Producer and Consumer functions:
 ```c
 void Producer_Process(void *producer_no)
 {
