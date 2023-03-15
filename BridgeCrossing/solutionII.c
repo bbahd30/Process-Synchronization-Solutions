@@ -6,11 +6,8 @@
 #include "../Semaphore.h"
 
 // semaphore emutex -> provides priority access to the car arrived first
-//      releases when allowed to cross bridge (the critical section)
-//      else waits by looping without releasing the semaphore emutex
 
-// semaphore mutex -> allows to update the shared variable carsOnBridge, when satisfies the conditon
-//      to prevent the race conditon among the cars on the same side allowed to cross, for updating the value of number of cars on bridge
+
 struct Semaphore emutex, leftSem, rightSem;
 int numCars;
 int rightCars, leftCars;
@@ -64,13 +61,11 @@ void *rightCar(void *arg)
 {
     int carId = *(int *)arg;
     // as the right car arrives its shows its arrival
-    // after arriving tries to aquire the emutex semaphore to enter the bridge
+    // after arriving tries to acquire the emutex semaphore to enter the bridge
     // thus tracking the car arrived first by being aquired by that thread
-
     // is aquired by the car if there are no other cars waiting for their turn to cross the bridge
     // as if a car is not allowed to cross, it waits without releasing the mutex semaphore
     // thus preventing the cars arriving after the waiting car
-    // hence, prevents starvation of the car on opposite side
 
     sem_wait(&emutex);
     bridgeArrived(carId, 1);
