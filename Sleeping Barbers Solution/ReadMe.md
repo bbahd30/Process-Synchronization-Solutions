@@ -34,7 +34,7 @@ Customer(){
     do{
         Down(access_wait_chairs)
         
-        if(FreeSeats<0){
+        if(FreeSeats<=0){
             Up(access_wait_chairs)
             *** LEAVE WITHOUT A HAIRCUT ***
             continue
