@@ -4,44 +4,36 @@
 #include<pthread.h>
 #include<stdatomic.h>
 
+#define NUMBER_OF_CHAIRS 8
+#define HAIRCUT_TIME 2
+#define NUMBER_OF_BARBERS 2
+#define NUMBER_OF_CUSTOMERS 20
+#define MOD 800000
 
-struct Semaphore{
+struct Merasemaphore{
     volatile atomic_int value;
     volatile atomic_flag mutex;
 
-}Customer_Semaphore,Barber_Semaphore,Mutex_Semaphore;
+}BarberSleep,WaitingCustomer,AccessWaitChairs,BarberSemaphore[NUMBER_OF_BARBERS];
 
-void sem_wait(struct Semaphore *s){
+void sem_wait(struct Merasemaphore *s){
     while(atomic_flag_test_and_set(&s->mutex));
     while(atomic_load(&s->value)<=0);
     atomic_fetch_sub(&s->value, 1);
     atomic_flag_clear(&s->mutex);
 }
 
-void sem_init(struct Semaphore *s, int value){
+void sem_init(struct Merasemaphore *s, int value){
     atomic_init(&s->value,value);
 }
 
-
-void sem_post(struct Semaphore *s){
+void sem_post(struct Merasemaphore *s){
     atomic_fetch_add(&s->value,1);
 }
 
-void sem_destroy(struct Semaphore *s){
+void sem_destroy(struct Merasemaphore *s){
     while(!(s->value))sem_post(s);
 }
-
-#define NUM_OF_CHAIRS 8
-#define HAIRCUT_TIME 1
-#define NUM_OF_BARBERS 4
-#define NUM_OF_CUSTOMERS 20
-#define MOD 40000
-
-int NumberOfFreeSeats=NUM_OF_CHAIRS;
-int Seat_To_Customer_Map[NUM_OF_CHAIRS];
-int Next_Seat_To_Be_Occupied=0;
-int Chair_Index=0;
-int Customer_Number=0;
 
 int RandomNumberGenerator(){
     int x=rand()%MOD+100;
@@ -53,91 +45,102 @@ void Wait_Before_Next_Customer_Arrives(){
     usleep(RandomNumberGenerator());
 }
 
-void Barber_Thread(void *ptr){
+int ChairIndexOfFirstWaitingCustomer;
+int SeatToCustomerMap[NUMBER_OF_CHAIRS];
+int NumberOfFreeWaitingChairs;
+int NextSeatToBeOccupied;
 
-    int index=*((int*)ptr);
-    index=(index)%NUM_OF_BARBERS;
-    int Customer_ID=-1,Next_Customer_To_Be_Served;
+void BarberThread(void *ptr){
+    int Index=*((int *)ptr)+1;
+    int CustomerID;             // ID of the customer that the barber will serve
+    int NextCustomerToBeServed; //index of the chair where next customer will be served
 
     while(1){
-        sem_wait(&Barber_Semaphore);
-        sem_wait(&Mutex_Semaphore);
-        Chair_Index=(Chair_Index+1)%NUM_OF_CHAIRS;
-        Next_Customer_To_Be_Served=Chair_Index;
-        Customer_ID=Seat_To_Customer_Map[Next_Customer_To_Be_Served];
-        Seat_To_Customer_Map[Next_Customer_To_Be_Served]=pthread_self();
-        sem_post(&Mutex_Semaphore);
-        sem_post(&Customer_Semaphore);
-        printf("Barber %d is cutting the hair of customer %d\n",index+1,Customer_ID);
 
-        sleep(HAIRCUT_TIME);
+        sem_wait(&WaitingCustomer);
+        sem_wait(&AccessWaitChairs);
 
-        printf("Barber %d is done with the haircut of the customer %d\n",index+1,Customer_ID);
+        CustomerID=SeatToCustomerMap[ChairIndexOfFirstWaitingCustomer];
+        ChairIndexOfFirstWaitingCustomer=(ChairIndexOfFirstWaitingCustomer+1)%NUMBER_OF_CHAIRS;
+
+        sem_post(&AccessWaitChairs);
+        sem_post(&BarberSleep);
+
+        sem_wait(&BarberSemaphore[Index-1]);
+        NumberOfFreeWaitingChairs++;
+        printf("Barber %d cuts the hair of the customer %d\n",Index,CustomerID);
+        sleep(HAIRCUT_TIME);        
+        sem_post(&BarberSemaphore[Index-1]);
     }
-    return;
-}
-
-void Customer_Thread(void *ptr){
-
-    int Seat_Index, Barber_ID=-1;
-
-    sem_wait(&Mutex_Semaphore);
-    Customer_Number++;
-    printf("Customer %d has entered the shop\n",Customer_Number);
-
-    if(NumberOfFreeSeats<=0){
-        printf("Customer %d has no free seats and hence leaves\n",Customer_Number);
-        sem_post(&Mutex_Semaphore);
-        pthread_exit(0);
-        return;
-    }
-
-    NumberOfFreeSeats--;
-
-    printf("Customer %d finds a seat in the shop and sits in the waiting room\n",Customer_Number);
-    Next_Seat_To_Be_Occupied=(Next_Seat_To_Be_Occupied+1)%NUM_OF_CHAIRS;
-    Seat_Index=Next_Seat_To_Be_Occupied;
-    Seat_To_Customer_Map[Seat_Index]=Customer_Number;
-
-    sem_post(&Mutex_Semaphore);
-    sem_post(&Barber_Semaphore);
-    sem_wait(&Customer_Semaphore);
-    sem_wait(&Mutex_Semaphore);
-
-    Barber_ID=Seat_To_Customer_Map[Seat_Index];
-    NumberOfFreeSeats++;
-
-    sem_post(&Mutex_Semaphore);
-
     pthread_exit(0);
     return;
 }
 
-int main(){
-    pthread_t Barbers[NUM_OF_BARBERS];
-    pthread_t Customers[NUM_OF_CUSTOMERS];
+void CustomerThread(void *ptr){
 
+    int Index=*((int *)ptr)+1;         //ID of the customer
 
-    sem_init(&Customer_Semaphore,0);
-    sem_init(&Barber_Semaphore,0);
-    sem_init(&Mutex_Semaphore,1);
+    sem_wait(&AccessWaitChairs);
+    
+    printf("Customer %d has entered the shop\n",Index);
 
+    if(NumberOfFreeWaitingChairs<=0){
 
-    printf("Opening the Shop\n");
-    for(int i=0;i<NUM_OF_BARBERS;i++){
-        pthread_create(&Barbers[i],NULL,(void *)Barber_Thread,(void *)&i);
+        printf("Customer %d finds no free seats in the shop and hence leaves\n",Index);
+        sem_post(&AccessWaitChairs);
+
+        pthread_exit(0);
+        return;
     }
 
+    printf("Customer %d sits in the chair %d inside the shop\n",Index,NextSeatToBeOccupied+1);
+    NumberOfFreeWaitingChairs--;
+    SeatToCustomerMap[NextSeatToBeOccupied]=Index;
+    NextSeatToBeOccupied=(NextSeatToBeOccupied+1)%NUMBER_OF_CHAIRS;
+
+    sem_post(&AccessWaitChairs);
+    sem_post(&WaitingCustomer);
+    sem_wait(&BarberSleep);
+
+    /*      GET A HAIRCUT         */
+}
+
+
+int main(){
+
+    pthread_t Barbers[NUMBER_OF_BARBERS];
+    pthread_t Customers[NUMBER_OF_CUSTOMERS];
+
+    for(int i=0;i<NUMBER_OF_BARBERS;i++){
+        sem_init(&BarberSemaphore[i],1);
+    }
+    sem_init(&BarberSleep,0);
+    sem_init(&WaitingCustomer,0);
+    sem_init(&AccessWaitChairs,1);
+
+    NextSeatToBeOccupied=0;
+    NumberOfFreeWaitingChairs=NUMBER_OF_CHAIRS;
+    ChairIndexOfFirstWaitingCustomer=0;
+
+    printf("Opening the shop\n");
+
+    for(int i=0;i<NUMBER_OF_BARBERS;i++){
+        pthread_create(&Barbers[i],NULL,(void *)BarberThread,(void *)&i);
+    }
 
     printf("Customers start coming to the shop\n");
-    for(int i=0;i<NUM_OF_CUSTOMERS;i++){
-        pthread_create(&Customers[i],NULL,(void *)Customer_Thread,(void *)&i);
+
+    for(int i=0;i<NUMBER_OF_CUSTOMERS;i++){
+        pthread_create(&Customers[i],NULL,(void *)CustomerThread,(void *)&i);
         Wait_Before_Next_Customer_Arrives();
     }
 
-    for(int i=0;i<NUM_OF_CUSTOMERS;i++){
+    for(int i=0;i<NUMBER_OF_CUSTOMERS;i++){
         pthread_join(Customers[i],NULL);
     }
 
+    printf("Closing the shop\n");
+
     exit(0);
+    
 }
